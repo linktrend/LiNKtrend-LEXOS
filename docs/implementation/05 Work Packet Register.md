@@ -492,7 +492,7 @@ Stop if app initialization would overwrite existing app code.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 

@@ -6,7 +6,7 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-01 — App Foundation** is complete for review on branch **`dev/cursor-foundation`**. Next.js 16 (App Router, `src/app/`), TypeScript, Tailwind CSS v4, ESLint, and pnpm are in place. Route shells exist for `/`, `/dashboard`, `/clients`, `/clients/[clientId]`, `/matters`, `/matters/[matterId]` (redirects to overview), and all listed matter sub-routes with a shared header and matter nav. Supabase browser client placeholder is in `src/lib/supabase/client.ts` (anon key only; returns `null` if env missing). **shadcn/ui** was skipped to avoid Tailwind v4 friction (non-blocking). `pnpm run lint` and `pnpm run build` pass. WP-01 is **`ready_for_review`** in the Work Packet Register. Next packet: **WP-02** (schema) on the branch assigned in the register.
+**WP-02 — Supabase Schema Migration** is complete for review on branch **`dev/cursor-schema`**. Six migration files created under `supabase/migrations/`: extensions and enums (001), identity/intake/clients/matters (002), evidence and extractions (003), assertions/support matrix/risks (004), artifacts/workflows/audit (005), embeddings/tool/model logs (006). All 26 MVP tables are defined with foreign keys, indexes, and controlled-value `CHECK` constraints. `embedding_chunks.embedding_vector` uses `vector(3072)` for Gemini. RLS is deliberately deferred to WP-03 (scoping fields present; no policies enabled). No `user_profiles` seed row (auth.users FK). Demo seed in `supabase/seed/demo_seed.sql` (fake data only). `src/types/database.ts` is a minimal stub pending live type generation. `pnpm run lint` and `pnpm run build` pass. WP-02 is **`ready_for_review`** in the Work Packet Register. Next packet: **WP-03 — Auth and Basic Access**.
 
 ---
 
@@ -14,6 +14,7 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-11 | Cursor | WP-02 | 26-table Supabase schema; 6 migrations; vector(3072) Gemini; RLS deferred; demo seed (no real data); type stub; lint+build green; WP-02 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-01 | Next.js + TS + Tailwind app shell; matter/client routes; Supabase placeholder; README/.gitignore merged; lint+build green; WP-01 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-00 | Established project state, handoff structure, README, env template, gitignore; WP-00 → `ready_for_review`. |
 
