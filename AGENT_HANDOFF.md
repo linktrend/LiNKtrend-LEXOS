@@ -6,7 +6,7 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-WP-00 (Repository Control and State Files) populated root control files: `PROJECT_STATE.md`, `AGENT_HANDOFF.md`, `README.md`, `.gitignore`, `.env.example`, and set WP-00 to `ready_for_review` in `docs/implementation/05 Work Packet Register.md`. The repo remains in **Phase 0** with **no application scaffold** and **no Git metadata** until the operator initializes Git and remotes. Next implementation packet is **WP-01 — App Foundation** on branch **`dev/cursor-foundation`** (per register), after baseline commit workflow.
+**WP-01 — App Foundation** is complete for review on branch **`dev/cursor-foundation`**. Next.js 16 (App Router, `src/app/`), TypeScript, Tailwind CSS v4, ESLint, and pnpm are in place. Route shells exist for `/`, `/dashboard`, `/clients`, `/clients/[clientId]`, `/matters`, `/matters/[matterId]` (redirects to overview), and all listed matter sub-routes with a shared header and matter nav. Supabase browser client placeholder is in `src/lib/supabase/client.ts` (anon key only; returns `null` if env missing). **shadcn/ui** was skipped to avoid Tailwind v4 friction (non-blocking). `pnpm run lint` and `pnpm run build` pass. WP-01 is **`ready_for_review`** in the Work Packet Register. Next packet: **WP-02** (schema) on the branch assigned in the register.
 
 ---
 
@@ -14,6 +14,7 @@ WP-00 (Repository Control and State Files) populated root control files: `PROJEC
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-11 | Cursor | WP-01 | Next.js + TS + Tailwind app shell; matter/client routes; Supabase placeholder; README/.gitignore merged; lint+build green; WP-01 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-00 | Established project state, handoff structure, README, env template, gitignore; WP-00 → `ready_for_review`. |
 
 (Add new rows above the template section or continue the table.)

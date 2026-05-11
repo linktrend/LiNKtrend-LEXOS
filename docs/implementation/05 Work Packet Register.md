@@ -406,7 +406,7 @@ Stop if README or state files already contain substantive content that would be 
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 

@@ -10,8 +10,8 @@ Last updated: 2026-05-11
 
 ## Phase and branch
 
-- **Current phase:** Phase 0 — Repository and Implementation Control (see `docs/implementation/00 MVP Implementation Roadmap.md`, section 7)
-- **Current branch:** Not detectable — Git was not initialized in the workspace at WP-00 completion time. After `git init`, use the branch named in the active work packet in `docs/implementation/05 Work Packet Register.md` (WP-00 lists `dev/cursor-foundation`; follow operator workflow for `main` / `development` as documented in repo handoff).
+- **Current phase:** Phase 1 — App Foundation (see `docs/implementation/00 MVP Implementation Roadmap.md`, section 7)
+- **Current branch:** `dev/cursor-foundation`
 
 ## Documentation structure
 
@@ -22,44 +22,43 @@ Last updated: 2026-05-11
 | `docs/source-briefings/` | Legacy briefing and historical material only; not authoritative for implementation. |
 | `.cursor/rules/` | LEXOS agent and architecture rules for Cursor. |
 | `.cursor/skills/` | Project-scoped skills for Cursor. |
+| `src/app/` | Next.js App Router routes and layouts (LEXOS UI shell). |
 
 ## Completed setup work
 
-- Canonical specs and implementation documents are present under `docs/`.
-- WP-00 deliverables: `PROJECT_STATE.md`, `AGENT_HANDOFF.md`, `README.md`, `.gitignore`, `.env.example` populated; WP-00 marked `ready_for_review` in the Work Packet Register.
+- Canonical specs and implementation documents under `docs/`.
+- WP-00: project control files and baseline `.gitignore` / `.env.example`.
+- WP-01: Next.js 16 + React 19 + TypeScript + Tailwind v4 app scaffold; route shells for dashboard, clients, matters (including matter sub-spine); site header navigation; Supabase **browser** client placeholder (`@supabase/ssr` + `@supabase/supabase-js`); `pnpm run lint` and `pnpm run build` passing.
 
 ## Work packets
 
-- **Active work packet:** WP-00 — Repository Control and State Files (`ready_for_review` until merged/accepted; then WP-01 becomes active).
-- **Pending work packets (early sequence):** WP-01 App Foundation; WP-02 Database Schema and Object Spine (Cursor/Codex); WP-03 Auth and Basic Access; WP-04 Client / Matter / Intake Core — see `docs/implementation/05 Work Packet Register.md`, section 11 (Suggested Parallelization).
+- **Active work packet:** WP-01 — App Foundation (`ready_for_review` until accepted).
+- **Next:** WP-02 — Supabase schema / object spine (per `docs/implementation/05 Work Packet Register.md`; exact title may vary by register revision), then WP-03 Auth, WP-04 Client/Matter.
 
 ## Blockers
 
-- **Git:** Repository not yet initialized locally — no branch/remote until operator runs `git init` and adds `origin`.
-- **Supabase:** No project linked; no runtime configuration.
-- **Application:** No Next.js app — intentional until WP-01.
-
-None of the above block WP-00 acceptance; they are expected Phase 0 gaps.
+- **Supabase:** No linked project in runtime; env vars unset until operator copies `.env.example` to `.env.local` (gitignored).
+- **Schema / auth / W4:** Intentionally not started (later work packets).
 
 ## Environment status
 
-- Local filesystem workspace only.
-- Secrets and real credentials must live in ignored `.env` files (not committed). Use `.env.example` for placeholder names only.
+- **Package manager:** `pnpm` (lockfile `pnpm-lock.yaml`).
+- Local dev: `pnpm run dev` on port 3000 (default).
 
 ## Supabase status
 
-- Not configured. Placeholders exist in `.env.example` for URL, anon key, service role key, and `DATABASE_URL` when WP-01+ wiring exists.
+- Dependencies installed (`@supabase/supabase-js`, `@supabase/ssr`). Browser helper returns `null` when public URL/anon key missing. **Service role key must never be used in client bundles** (see `.cursor/rules/04-security-and-privacy-rules.mdc`).
 
 ## App status
 
-- Not initialized. App foundation is WP-01 per the MVP roadmap.
+- **Initialized.** App Router under `src/app/`; static shell only — no business logic, no DB, no auth, no agents.
 
 ## Known risks
 
-- Accidental edits to `docs/lexos-system-spec/` or canonical doctrine drift — mitigated by `.cursor/rules` and explicit “do not modify unless instructed” policy.
-- Secret leakage via committed `.env` or logs — mitigated by `.gitignore` and security rules; operators must verify before push.
+- **shadcn/ui:** Deferred in WP-01 (Tailwind v4 compatibility); add later if desired.
+- **Scaffold path:** `create-next-app` ran in a lowercase temp folder then files were moved to preserve repo root naming and avoid touching `docs/` or `.cursor/`.
 
 ## Next recommended step
 
-1. Operator: `git init` (if not done), review changes, commit baseline per project workflow, add remote `https://github.com/linktrend/LiNKtrend-LEXOS.git` if missing, push, then create `development` and `dev/cursor-foundation` as planned.
-2. Implementation: start **WP-01 — App Foundation** on branch `dev/cursor-foundation` (per Work Packet Register), after WP-00 is accepted.
+1. Review and merge WP-01; set register status to `done` or equivalent per team convention.
+2. Start **WP-02** on the branch named in the Work Packet Register (`dev/cursor-schema` or `dev/codex-schema` as assigned).

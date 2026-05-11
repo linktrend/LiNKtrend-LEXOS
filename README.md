@@ -52,3 +52,25 @@ Do **not** modify the thirteen canonical documents under `docs/lexos-system-spec
 ## Environment setup (later phases)
 
 Copy `.env.example` to a local ignored env file and fill values when the app and integrations exist. Never commit secrets.
+
+## Application (WP-01)
+
+Next.js (App Router) lives under `src/app/`. UI shell components are under `src/components/`; Supabase browser placeholder is `src/lib/supabase/client.ts` (public anon key only — never use the service role in client code).
+
+From the repository root:
+
+```bash
+pnpm install
+pnpm run dev
+```
+
+Quality checks (required before marking WP-01 complete):
+
+```bash
+pnpm run lint
+pnpm run build
+```
+
+Production start after build: `pnpm run start`.
+
+**shadcn/ui:** Not added in WP-01 to avoid Tailwind v4 friction; can be introduced in a later packet if compatible with the chosen stack.
