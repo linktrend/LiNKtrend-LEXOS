@@ -6,7 +6,9 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-02 — Supabase Schema Migration** is complete for review on branch **`dev/cursor-schema`**. Six migration files created under `supabase/migrations/`: extensions and enums (001), identity/intake/clients/matters (002), evidence and extractions (003), assertions/support matrix/risks (004), artifacts/workflows/audit (005), embeddings/tool/model logs (006). All 26 MVP tables are defined with foreign keys, indexes, and controlled-value `CHECK` constraints. `embedding_chunks.embedding_vector` uses `vector(3072)` for Gemini. RLS is deliberately deferred to WP-03 (scoping fields present; no policies enabled). No `user_profiles` seed row (auth.users FK). Demo seed in `supabase/seed/demo_seed.sql` (fake data only). `src/types/database.ts` is a minimal stub pending live type generation. `pnpm run lint` and `pnpm run build` pass. WP-02 is **`ready_for_review`** in the Work Packet Register. Next packet: **WP-03 — Auth and Basic Access**.
+**WP-02 — Supabase Schema Migration (migrations applied)** — All 6 migration files have been applied to the live Supabase project `iqoelotzvdcjifajfuto` (region: `ap-southeast-1`, Postgres 17.6, `ACTIVE_HEALTHY`) via the Supabase MCP `apply_migration` tool. All 26 MVP tables are confirmed live. `src/types/database.ts` has been replaced with a full auto-generated type file from `generate_typescript_types` (MCP). `embedding_chunks.embedding_vector vector(3072)` confirmed in live schema. RLS remains deferred to WP-03. pgvector ivfflat index applied. `pnpm run lint` and `pnpm run build` pass. WP-02 is **`ready_for_review`** (migrations live). Next packet: **WP-03 — Auth and Basic Access** on branch `dev/cursor-auth`.
+
+Note: Supabase CLI `supabase link` and `supabase db push` require a personal access token (PAT) — not the publishable key. The direct DB host (`db.iqoelotzvdcjifajfuto.supabase.co`) is IPv6-only with no public IPv4 A record; direct TCP on port 5432 is unreachable from this machine. Migrations were applied via MCP. Operator should cycle provided credentials per earlier agreement.
 
 ---
 
@@ -14,6 +16,7 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-11 | Cursor | WP-02 (push) | 6 migrations applied to live project `iqoelotzvdcjifajfuto` via MCP; 26 tables confirmed; full types auto-generated; lint+build green; WP-02 → `ready_for_review` (live). |
 | 2026-05-11 | Cursor | WP-02 | 26-table Supabase schema; 6 migrations; vector(3072) Gemini; RLS deferred; demo seed (no real data); type stub; lint+build green; WP-02 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-01 | Next.js + TS + Tailwind app shell; matter/client routes; Supabase placeholder; README/.gitignore merged; lint+build green; WP-01 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-00 | Established project state, handoff structure, README, env template, gitignore; WP-00 → `ready_for_review`. |

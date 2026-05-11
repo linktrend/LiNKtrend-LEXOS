@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-11
+Last updated: 2026-05-11 (WP-02 migrations applied to live Supabase project)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-11
 
 ## Phase and branch
 
-- **Current phase:** Phase 2 — Database Schema and Object Spine
-- **Current branch:** `dev/cursor-schema`
+- **Current phase:** Phase 2 — Database Schema and Object Spine (migrations live)
+- **Current branch:** `development` (WP-02 merged)
 
 ## Documentation structure
 
@@ -31,19 +31,18 @@ Last updated: 2026-05-11
 - Canonical specs and implementation documents under `docs/`.
 - WP-00: project control files, `.gitignore`, `.env.example`.
 - WP-01: Next.js 16 + React 19 + TypeScript + Tailwind v4 app scaffold; all matter sub-route shells; Supabase browser client placeholder; `pnpm run lint` and `pnpm run build` passing.
-- WP-02: Supabase schema — 26 tables across 6 migration files; `supabase init` with `config.toml`; demo seed (no real data); `src/types/database.ts` stub; RLS deferred to WP-03; `vector(3072)` for Gemini embeddings; lint and build still passing.
+- WP-02: Supabase schema — 26 tables across 6 migration files applied to live project `iqoelotzvdcjifajfuto`; `vector(3072)` for Gemini embeddings; RLS deferred to WP-03; full TypeScript types auto-generated from live schema; lint and build passing.
 
 ## Work packets
 
-- **Active work packet:** WP-02 — Supabase Schema Migration (`ready_for_review` until accepted).
+- **Active work packet:** WP-02 — Supabase Schema Migration (`ready_for_review`; migrations live).
 - **Next:** WP-03 Auth and Basic Access, then WP-04 Client/Matter/Intake Core — per `docs/implementation/05 Work Packet Register.md`.
 
 ## Blockers
 
-- **Supabase:** No live project linked. Migrations are created but not applied. Operator must `supabase db push` or `supabase start` once a Supabase project ID is set in `supabase/config.toml`.
-- **pgvector:** Extension required for `embedding_chunks.embedding_vector vector(3072)`. Will fail at migration apply time if pgvector is not enabled on the target project.
-- **Auth:** RLS deliberately deferred to WP-03; schema is open (no policies) until then.
-- **Types:** `src/types/database.ts` is a minimal stub; regenerate with `supabase gen types typescript` after project is linked.
+- **Credentials:** Operator to cycle Supabase credentials after dev session (as noted when provided).
+- **Auth:** RLS deliberately deferred to WP-03; schema is open (no policies) until then. Do not expose to public network without WP-03.
+- **`supabase link`:** CLI link (`supabase link --project-ref`) requires a Supabase personal access token (PAT). Direct CLI `db push` via IPv4 was not possible (project is IPv6-only direct connection). Migrations were applied successfully via Supabase MCP (`apply_migration`). Types were generated via MCP (`generate_typescript_types`).
 
 ## Environment status
 
@@ -52,10 +51,11 @@ Last updated: 2026-05-11
 
 ## Supabase status
 
-- `supabase/` tree initialized (`config.toml`, `migrations/`, `seed/`).
-- Six migration files created; not yet applied to any live DB.
-- Demo seed in `supabase/seed/demo_seed.sql` (fake data only; no user_profiles row).
-- `supabase db push` or `supabase start` required to apply. Set `project_id` in `supabase/config.toml` first.
+- **Project:** `iqoelotzvdcjifajfuto` — `ACTIVE_HEALTHY`, region `ap-southeast-1`, Postgres 17.6.
+- All 6 migrations applied successfully via MCP. 26 tables live in public schema.
+- `src/types/database.ts` fully regenerated from live schema (auto-generated, not hand-written).
+- Demo seed in `supabase/seed/demo_seed.sql` — NOT yet applied; must be run manually against live project after a dev auth user exists (for `user_profiles` FK safety).
+- pgvector enabled and `vector(3072)` column confirmed live.
 
 ## App status
 
@@ -63,14 +63,13 @@ Last updated: 2026-05-11
 
 ## Known risks
 
-- pgvector must be enabled on the Supabase project before migration 006 is applied.
-- Embedding dimension `vector(3072)` targets Gemini default; change to 1536 or 768 for scaled Gemini output or other providers before first embedding write.
 - RLS is off — do not expose this schema to a public network without WP-03 policies.
-- `src/types/database.ts` stub will drift if migrations change; regenerate after project link.
+- Embedding dimension `vector(3072)` targets Gemini default; change to 1536 or 768 for scaled output or other providers before first embedding write (ALTER TABLE required before data inserted).
+- Demo seed not applied — run manually after creating a dev auth user to avoid user_profiles FK violations.
+- Credentials should be cycled after dev session.
 
 ## Next recommended step
 
-1. Accept WP-02; set register status to `done` or equivalent.
-2. Set `project_id` in `supabase/config.toml`, enable pgvector on the Supabase project, then run `supabase db push`.
-3. Regenerate `src/types/database.ts` using the Supabase CLI.
-4. Start **WP-03 — Auth and Basic Access** on its assigned branch to implement RLS policies.
+1. Accept WP-02; set register status to `done`.
+2. Start **WP-03 — Auth and Basic Access** on `dev/cursor-auth` to implement RLS policies and auth flows.
+3. Optionally: create a dev Supabase auth user and apply `supabase/seed/demo_seed.sql` manually for testing.
