@@ -1,0 +1,70 @@
+---
+description: Mandatory rules for W4-lite enhanced evidence ingestion.
+alwaysApply: true
+---
+
+# W4-lite Enhanced Ingestion Rules
+
+W4-lite is mandatory MVP infrastructure.
+
+The original uploaded file must be preserved unchanged. It is the evidentiary anchor.
+
+Evidence Object and Evidence Extraction Object are separate records.
+
+Supported files must produce:
+
+- original stored file;
+- Evidence Object;
+- Evidence Extraction Object;
+- markdown extraction where applicable;
+- structured JSON extraction where applicable;
+- `processing_status`;
+- `extraction_quality_status`;
+- quality flags;
+- `human_review_required`;
+- audit event.
+
+For supported document-like evidence, LlamaParse or an equivalent layout-aware parser is the primary extraction layer.
+
+OCR is a supporting capability or fallback only.
+
+PDFs composed of screenshots, WhatsApp screenshots, chat screenshots, message screenshots, scanned PDFs, and image-based document pages are parser-first, OCR/vision-assisted extraction tasks.
+
+Raw OCR-only fallback must be marked:
+
+- `qa_flagged`; or
+- `human_review_required`
+
+unless reviewed and accepted.
+
+Do not silently accept raw OCR as final extraction where layout, table structure, message attribution, chronology, timestamps, or evidentiary context is material.
+
+Extraction QA must flag:
+
+- missing text;
+- missing pages;
+- bad layout reconstruction;
+- table uncertainty;
+- sender attribution uncertainty;
+- timestamp uncertainty;
+- cropped or unreadable messages;
+- raw OCR fallback;
+- parser failure;
+- vision QA failure.
+
+Failed, QA-flagged, or human-review-required extraction cannot silently support assertions in W5.
+
+Embeddings, if enabled, must link to:
+
+- `client_id`;
+- `matter_id`;
+- `evidence_id`;
+- `extraction_id`;
+- chunk index;
+- privilege status;
+- confidentiality status;
+- source reference.
+
+Embeddings are retrieval aids, not evidence.
+
+If implementation cannot perform full parser/QA extraction, create a controlled placeholder extraction marked `human_review_required`, not a false success.

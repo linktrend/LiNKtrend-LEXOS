@@ -1,0 +1,55 @@
+---
+description: Testing and acceptance rules for claiming LEXOS work complete.
+alwaysApply: true
+---
+
+# LEXOS Testing and Acceptance Rules
+
+Do not claim completion without running available checks.
+
+Use:
+
+`docs/implementation/04 MVP Acceptance Test Plan.md`
+
+as the MVP acceptance authority.
+
+Every work packet must include either automated tests or a manual verification report.
+
+The MVP fails if:
+
+- Evidence Extraction Object is missing;
+- Support Matrix is missing;
+- unsupported facts are hidden;
+- contradictions are hidden;
+- W9 is skipped;
+- raw OCR-only screenshot extraction is silently accepted;
+- retrieval is global by default;
+- workflow state is missing;
+- artifact status is missing;
+- audit events are missing for material actions;
+- original evidence can be overwritten by extraction;
+- embeddings are treated as evidence;
+- rejected/abandoned W0 intake becomes persistent W1 client memory.
+
+W4-lite acceptance requires:
+
+- Evidence Object;
+- Evidence Extraction Object;
+- original preserved unchanged;
+- markdown extraction where applicable;
+- structured JSON extraction where applicable;
+- `processing_status`;
+- `extraction_quality_status`;
+- `human_review_required`;
+- quality flags;
+- no silent reliance on failed/QA-flagged extraction.
+
+Before final report, include:
+
+- commands run;
+- test/manual verification results;
+- known failures;
+- unresolved risks;
+- whether acceptance criteria were met.
+
+If tests fail and cannot be fixed within the assigned work packet, stop and report the failure rather than broadening scope.

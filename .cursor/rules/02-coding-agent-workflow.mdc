@@ -1,0 +1,64 @@
+---
+description: Controls how Cursor and Codex execute LEXOS coding tasks.
+alwaysApply: true
+---
+
+# LEXOS Coding Agent Workflow
+
+Every coding task must map to a work packet in:
+
+`docs/implementation/05 Work Packet Register.md`
+
+Use a branch named:
+
+`dev/<tool>-<task>`
+
+Examples:
+
+- `dev/cursor-foundation`
+- `dev/cursor-schema`
+- `dev/codex-w4-extraction`
+- `dev/codex-support-matrix`
+
+Before starting, confirm:
+
+- active branch;
+- active work packet;
+- allowed files/folders;
+- prohibited files/folders;
+- required source documents;
+- acceptance criteria;
+- tests required.
+
+Do not edit outside the allowed scope.
+
+Stop and report if the task requires touching prohibited files.
+
+Update `AGENT_HANDOFF.md` after every material task.
+
+Update `PROJECT_STATE.md` when project state, phase, blockers, environment status, or next step changes.
+
+Run available verification commands before claiming completion. Use whatever exists in the repo, such as:
+
+- lint;
+- typecheck;
+- build;
+- unit tests;
+- migration check;
+- manual verification checklist.
+
+If no automated checks exist yet, perform and report manual verification.
+
+Final reports must include:
+
+- branch;
+- files changed;
+- what was implemented;
+- decisions made;
+- tests/checks run;
+- test results;
+- blockers;
+- deviations from instructions;
+- next recommended step.
+
+Do not say work is complete unless verification has been run or the absence of verification is explicitly reported.

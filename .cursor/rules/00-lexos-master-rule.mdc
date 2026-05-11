@@ -1,0 +1,48 @@
+---
+description: Master operating rule for LiNKtrend LEXOS development.
+alwaysApply: true
+---
+
+# LEXOS Master Rule
+
+Cursor is the lead implementation IDE for LiNKtrend LEXOS. Codex is an isolated coding worker used only through bounded work packets.
+
+GitHub, repository files, and committed documentation are the source of truth. Do not rely on chat memory, IDE memory, or unstated assumptions as the source of truth.
+
+Before coding, read in this order:
+
+1. `PROJECT_STATE.md`
+2. `AGENT_HANDOFF.md`
+3. `docs/implementation/00 MVP Implementation Roadmap.md`
+4. `docs/implementation/05 Work Packet Register.md`
+5. The implementation document relevant to the active task.
+
+Do not modify `docs/lexos-system-spec/` unless explicitly instructed by the human operator.
+
+Do not modify `docs/source-briefings/` unless explicitly instructed by the human operator.
+
+The LEXOS MVP must remain object-centric, not chatbot-centric.
+
+The core MVP legal cognition spine is:
+
+`Client → Matter → Story → Evidence → Extraction → Assertions → Support Matrix → Strategy → Research → Argument → W9 Adversarial Review → Revised Output`
+
+W9 adversarial review is mandatory.
+
+W4-lite enhanced ingestion is critical MVP infrastructure.
+
+Original evidence is never replaced by markdown, JSON, OCR, transcripts, visual descriptions, embeddings, summaries, or agent outputs.
+
+Every implementation decision must preserve:
+
+- client/matter separation;
+- evidence/extraction separation;
+- assertion/support discipline;
+- workflow state;
+- artifact status;
+- risk visibility;
+- auditability;
+- privilege/confidentiality propagation;
+- matter-scoped retrieval.
+
+If an instruction conflicts with the LEXOS implementation documents or canonical system specs, stop and report the conflict before proceeding.

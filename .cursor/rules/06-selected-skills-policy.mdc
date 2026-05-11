@@ -1,0 +1,68 @@
+---
+description: Policy for using imported/general Cursor skills in the LEXOS project.
+alwaysApply: true
+---
+
+# Selected Skills Policy
+
+Use imported or built-in skills only when relevant to the active LEXOS work packet.
+
+LEXOS-specific rules control over generic imported skills.
+
+Priority order:
+
+1. `.cursor/rules/`
+2. `docs/implementation/`
+3. `docs/lexos-system-spec/`
+4. `docs/ai-ops/imported-reference/` skills and agents
+5. `docs/source-briefings/` legacy material
+
+## Adopted Skill Policy
+
+Use these skill categories when relevant:
+
+- Schema and migrations: `database-design`, `supabase`, `supabase-postgres-best-practices`, Postgres best practices.
+- Backend/API: `api-patterns`, `nodejs-best-practices`, `clean-code`.
+- Frontend/UI: `nextjs-react-expert`, `frontend-design`, `tailwind-patterns`, `web-design-guidelines`.
+- W4 ingestion: `architecture`, `api-patterns`, `testing-patterns`, `systematic-debugging`, security rules, document/PDF handling skills where safe.
+- Testing: `tdd-workflow`, `testing-patterns`, `webapp-testing`, `lint-and-validate`, `verification-before-completion`.
+- Security: `vulnerability-scanner`, `security-auditor`, `security-best-practices`, `security-threat-model` when explicitly requested or relevant.
+- Debugging: `systematic-debugging`.
+- Reviews: `code-review-checklist`, `requesting-code-review`, `receiving-code-review`.
+- Planning: `plan-writing`, `writing-plans`, `executing-plans`.
+- Git/work isolation: `using-git-worktrees` when work needs isolation.
+- Parallelization: `parallel-agents` or `dispatching-parallel-agents` only under the Work Packet Register and only when tasks are independent.
+
+## Exclusion Policy
+
+Do not use or invoke excluded skills for MVP unless explicitly instructed by the human operator.
+
+Exclude by default:
+
+- mobile development/design skills;
+- SEO/GEO skills;
+- broad red-team or penetration-tester skills;
+- behavioral-mode skills that conflict with LEXOS workflow discipline;
+- intelligent-routing systems that bypass work packets;
+- brainstorming skills when scope is already defined;
+- autonomous orchestrator behavior not adapted to LEXOS.
+
+## Conflict Rule
+
+If imported skills conflict with LEXOS implementation docs, the LEXOS docs control.
+
+If a skill suggests broad autonomous edits, global context ingestion, external communication, public storage, or skipping verification, do not follow it.
+
+## Codex and Specialist Agent Rule
+
+Codex and specialist agents are isolated workers only.
+
+They must operate from:
+
+- one work packet;
+- one branch;
+- defined file/folder scope;
+- defined acceptance criteria;
+- required final handoff.
+
+No specialist agent may bypass `docs/implementation/05 Work Packet Register.md`.

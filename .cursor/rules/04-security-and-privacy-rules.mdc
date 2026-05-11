@@ -1,0 +1,53 @@
+---
+description: Security, privacy, privilege, and confidentiality rules for LEXOS implementation.
+alwaysApply: true
+---
+
+# LEXOS Security and Privacy Rules
+
+Never commit secrets.
+
+Never expose the Supabase service-role key client-side.
+
+Never place real legal/client data in tests, fixtures, examples, screenshots, logs, or seed files.
+
+Use fake/demo data only.
+
+Evidence buckets must not be public by default.
+
+Original evidence, extraction artifacts, transcripts, visual descriptions, OCR, markdown, JSON, embeddings, prompts, and generated artifacts inherit privilege/confidentiality sensitivity from their source material unless explicitly reviewed and reclassified.
+
+Derived artifacts inherit source evidence security labels.
+
+Prompt context must label:
+
+- QA-flagged extraction;
+- low-confidence extraction;
+- raw OCR fallback;
+- human-review-required content;
+- privilege/confidentiality status.
+
+Logs must not store full privileged content unless explicitly secured and justified.
+
+Avoid storing full prompts containing privileged evidence in insecure logs.
+
+Use scoped excerpts where possible.
+
+Do not create autonomous external legal communication in MVP.
+
+Do not create court filing tools in MVP.
+
+Do not create external email/opposing counsel/client communication tools unless explicitly instructed and governed.
+
+Do not create or enable global retrieval by default.
+
+Do not allow user interfaces to imply that drafts are externally approved.
+
+Stop and report if implementation requires:
+
+- production credentials;
+- real legal data;
+- broad public storage access;
+- external transmission of legal material;
+- weakening privilege/confidentiality labels;
+- client/matter isolation exceptions.

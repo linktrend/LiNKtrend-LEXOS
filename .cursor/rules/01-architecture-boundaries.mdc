@@ -1,0 +1,39 @@
+---
+description: Protects core LEXOS architecture boundaries during implementation.
+alwaysApply: true
+---
+
+# LEXOS Architecture Boundaries
+
+Preserve the core legal architecture at all times.
+
+Do not merge or collapse these objects:
+
+- Client and Matter;
+- Evidence and Evidence Extraction;
+- Assertion and Argument;
+- Risk and Workflow State;
+- Original Evidence and derived extraction artifacts;
+- Intake Candidate and accepted Client;
+- Draft Artifact and final/reviewed Artifact;
+- Embedding Chunk and Evidence.
+
+Use `client_id` and `matter_id` on scoped records.
+
+Use `intake_id` for W0 intake records and candidate objects.
+
+Use `evidence_id` and `extraction_id` on extraction-derived and embedding-derived records.
+
+Retrieval must be matter-scoped by default. Global retrieval is prohibited unless explicitly designed, reviewed, and constrained.
+
+Embeddings are retrieval aids, not evidence.
+
+OCR is not the primary final extraction method for document-like evidence where structure matters. OCR is support/fallback only.
+
+Generated drafts are internal work product and are not final external legal work product unless a separate review/approval workflow marks them appropriately.
+
+Do not create W1 persistent client memory from rejected or abandoned W0 intake data.
+
+Do not allow any workflow to bypass W9 adversarial review in the MVP legal cognition spine.
+
+If a proposed implementation would weaken these boundaries, stop and report.
