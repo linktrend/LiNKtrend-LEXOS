@@ -570,7 +570,7 @@ Stop if Supabase project/local database is not configured.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 

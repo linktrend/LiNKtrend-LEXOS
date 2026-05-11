@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-11 (WP-02 migrations applied to live Supabase project)
+Last updated: 2026-05-11 (WP-03 auth and user profile foundation complete)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-11 (WP-02 migrations applied to live Supabase project)
 
 ## Phase and branch
 
-- **Current phase:** Phase 2 — Database Schema and Object Spine (migrations live)
-- **Current branch:** `development` (WP-02 merged)
+- **Current phase:** Phase 3 — Auth and User Profile Foundation
+- **Current branch:** `dev/cursor-auth` (WP-03 in progress)
 
 ## Documentation structure
 
@@ -23,7 +23,7 @@ Last updated: 2026-05-11 (WP-02 migrations applied to live Supabase project)
 | `.cursor/rules/` | LEXOS agent and architecture rules for Cursor. |
 | `.cursor/skills/` | Project-scoped skills for Cursor. |
 | `src/app/` | Next.js App Router routes and layouts (LEXOS UI shell). |
-| `supabase/migrations/` | Postgres migrations (WP-02). |
+| `supabase/migrations/` | Postgres migrations (WP-02 + WP-03). |
 | `supabase/seed/` | Demo seed data (fake only). |
 
 ## Completed setup work
@@ -31,18 +31,20 @@ Last updated: 2026-05-11 (WP-02 migrations applied to live Supabase project)
 - Canonical specs and implementation documents under `docs/`.
 - WP-00: project control files, `.gitignore`, `.env.example`.
 - WP-01: Next.js 16 + React 19 + TypeScript + Tailwind v4 app scaffold; all matter sub-route shells; Supabase browser client placeholder; `pnpm run lint` and `pnpm run build` passing.
-- WP-02: Supabase schema — 26 tables across 6 migration files applied to live project `iqoelotzvdcjifajfuto`; `vector(3072)` for Gemini embeddings; RLS deferred to WP-03; full TypeScript types auto-generated from live schema; lint and build passing.
+- WP-02: Supabase schema — 26 tables across 6 migration files applied to live project `iqoelotzvdcjifajfuto`; `vector(3072)` for Gemini embeddings; RLS deferred; full TypeScript types auto-generated from live schema; lint and build passing.
+- WP-03: Auth foundation — `@supabase/ssr` server/admin clients, `src/proxy.ts` route protection, login page (email+password Server Action), logout route, `user_profiles` RLS + auto-create trigger (migration 007 applied via MCP), dashboard profile display; lint and build passing.
 
 ## Work packets
 
-- **Active work packet:** WP-02 — Supabase Schema Migration (`ready_for_review`; migrations live).
-- **Next:** WP-03 Auth and Basic Access, then WP-04 Client/Matter/Intake Core — per `docs/implementation/05 Work Packet Register.md`.
+- **Active work packet:** WP-03 — Auth and User Profile Foundation (`ready_for_review`).
+- **Next:** WP-04 — Client/Matter/Intake Core — per `docs/implementation/05 Work Packet Register.md`.
 
 ## Blockers
 
-- **Credentials:** Operator to cycle Supabase credentials after dev session (as noted when provided).
-- **Auth:** RLS deliberately deferred to WP-03; schema is open (no policies) until then. Do not expose to public network without WP-03.
-- **`supabase link`:** CLI link (`supabase link --project-ref`) requires a Supabase personal access token (PAT). Direct CLI `db push` via IPv4 was not possible (project is IPv6-only direct connection). Migrations were applied successfully via Supabase MCP (`apply_migration`). Types were generated via MCP (`generate_typescript_types`).
+- **Credentials:** Operator must populate `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` before running locally. Never commit `.env.local`.
+- **RLS — 25 remaining tables:** Only `user_profiles` has RLS enabled. All other tables remain open to authenticated queries. Safe during MVP dev (no real legal data, private network). **Must be resolved in WP-04+ before production use or any external access. Tracked blocker.**
+- **`supabase link`:** CLI link requires Supabase PAT. IPv4 direct connection not available (project is IPv6-only). Migrations applied via MCP. Types generated via MCP.
+- **Manual auth verification:** Cannot be performed without a live `.env.local` and a test Supabase auth user. Operator should run the checklist (see AGENT_HANDOFF.md) after configuring credentials.
 
 ## Environment status
 
@@ -52,24 +54,26 @@ Last updated: 2026-05-11 (WP-02 migrations applied to live Supabase project)
 ## Supabase status
 
 - **Project:** `iqoelotzvdcjifajfuto` — `ACTIVE_HEALTHY`, region `ap-southeast-1`, Postgres 17.6.
-- All 6 migrations applied successfully via MCP. 26 tables live in public schema.
-- `src/types/database.ts` fully regenerated from live schema (auto-generated, not hand-written).
-- Demo seed in `supabase/seed/demo_seed.sql` — NOT yet applied; must be run manually against live project after a dev auth user exists (for `user_profiles` FK safety).
-- pgvector enabled and `vector(3072)` column confirmed live.
+- 7 migrations applied (6 WP-02 schema + 1 WP-03 RLS/trigger). 26 tables live.
+- `user_profiles` RLS enabled. `handle_new_auth_user` trigger live.
+- `src/types/database.ts` auto-generated from live schema (WP-02). No regeneration required for WP-03 (trigger/policy only, no new columns).
+- Demo seed in `supabase/seed/demo_seed.sql` — NOT yet applied. Run manually after creating a dev auth user.
 
 ## App status
 
-- Running. App Router under `src/app/`; static shell only — no business logic, no auth, no agents.
+- Auth flow complete: `/login` → Server Action → session cookie → `/dashboard` → `user_profiles` display + logout.
+- Route protection active via `src/proxy.ts` (Next.js 16 proxy convention).
+- No business logic, no W4 ingestion, no agents.
 
 ## Known risks
 
-- RLS is off — do not expose this schema to a public network without WP-03 policies.
-- Embedding dimension `vector(3072)` targets Gemini default; change to 1536 or 768 for scaled output or other providers before first embedding write (ALTER TABLE required before data inserted).
-- Demo seed not applied — run manually after creating a dev auth user to avoid user_profiles FK violations.
-- Credentials should be cycled after dev session.
+- **RLS on 25 tables is off** — do not expose to a public network without WP-04 policies.
+- Embedding dimension `vector(3072)` targets Gemini default; change before first embedding write if using a different provider.
+- Demo seed not applied — run manually after creating a dev auth user.
+- New users default to role `operator`; admin must manually update roles via service-role server code.
 
 ## Next recommended step
 
-1. Accept WP-02; set register status to `done`.
-2. Start **WP-03 — Auth and Basic Access** on `dev/cursor-auth` to implement RLS policies and auth flows.
-3. Optionally: create a dev Supabase auth user and apply `supabase/seed/demo_seed.sql` manually for testing.
+1. Accept WP-03; set register status to `done`.
+2. Configure `.env.local` and run manual auth verification checklist (see AGENT_HANDOFF.md).
+3. Start **WP-04 — Client/Matter/Intake Core** on `dev/cursor-intake`.
