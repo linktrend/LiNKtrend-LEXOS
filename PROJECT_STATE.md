@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload action export fix; optional E2E bootstrap)
+Last updated: 2026-05-14 (WP-07 extraction foundation; evidence_extractions RLS fix; Playwright E2E green under `CI=true`)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload 
 
 ## Phase and branch
 
-- **Current phase:** Phase 5 — W4-lite evidence ingestion (upload foundation; extraction in WP-07)
-- **Current branch:** `dev/cursor-w4-upload` (WP-06 implementation)
+- **Current phase:** Phase 5 — W4-lite evidence ingestion (upload + extraction foundation; WP-08 QA next)
+- **Current branch:** `dev/cursor-w4-extraction` (WP-07 implementation)
 
 ## Documentation structure
 
@@ -23,7 +23,7 @@ Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload 
 | `.cursor/rules/` | LEXOS agent and architecture rules for Cursor. |
 | `.cursor/skills/` | Project-scoped skills for Cursor. |
 | `src/app/` | Next.js App Router routes and layouts (LEXOS UI). |
-| `supabase/migrations/` | Postgres migrations (WP-02 … WP-05 + **WP-06 evidence storage + RLS**). |
+| `supabase/migrations/` | Postgres migrations (WP-02 … WP-06 + **WP-07 evidence_extractions RLS**). |
 | `supabase/seed/` | Demo seed data (fake only). |
 
 ## Completed setup work
@@ -33,17 +33,19 @@ Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload 
 - **WP-04:** Client list/create/detail; matter list; matter create under client; matter layout + overview with posture/jurisdiction/status/workflow; `workflow_states` initialized on matter create (`W2` / `not_started` / next action); dashboard recent matters; server modules under `src/server/`; `created_by` scoping for non-admin with admin override; audit events `client_created`, `matter_created`, `workflow_state_initialized`; **RLS MVP policies** on `clients`, `matters`, `workflow_states`, `audit_events` (migration `20260512000001_wp04_clients_matters_workflow_audit_rls.sql`, applied to live project via MCP). **Pre-merge security hardening** (migration `20260512100000_wp04_security_profile_lock_and_delete_policies.sql`): `user_profiles` lock + RPC `update_own_user_display_name`; DELETE RLS aligned for rollback. `pnpm run lint` and `pnpm run build` pass.
 - **WP-05:** W0-lite intake routes (`/intake`, `/intake/new`, `/intake/[intakeId]`), `src/server/intake/*`, `src/features/intake/*`, handoff prepare + explicit W1 materialize; intake RLS (`20260512120000_wp05_intake_rls.sql`, applied live via MCP **`apply_migration`** `wp05_intake_rls`); SiteHeader **Intake** link.
 - **WP-06:** Evidence upload under matter (`/matters/[matterId]/evidence`, detail `/matters/[matterId]/evidence/[evidenceId]`); `src/server/evidence/*`, `src/lib/storage/evidence-originals.ts`, `src/features/evidence/*`; Server Action upload → insert `evidence` → Storage upload (`evidence-originals`, path `client/{client_id}/matter/{matter_id}/evidence/{evidence_id}/original/{filename}`) → patch `original_file_uri`; audit `evidence_uploaded`; signed download URL on detail page; **`original_file_hash` deferred** (null). Migration **`20260513120000_wp06_evidence_storage_and_rls.sql`**: private bucket + `storage.objects` policies + RLS on **`sources`** and **`evidence`** (matter owner / admin). `.env.example`: optional `STORAGE_BUCKET_EVIDENCE_ORIGINALS`. `pnpm run lint` / `pnpm run build` green.
+- **WP-07:** W4-lite extraction runner (`src/server/extraction/runner.ts`), classification (`src/lib/extraction/classify.ts`), parser adapters (`src/lib/parser/*`), `runExtractionAction` + Evidence Detail tabs (Markdown / JSON / Quality / WP-08 placeholder); `evidence_extractions` writes + parent `evidence` status updates; audits `evidence_extraction_*`. Migrations **`20260513130000_wp07_evidence_extractions_rls.sql`** (initial RLS) and **`20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`** (policies join parent `evidence` so inserts are not denied when denormalized `client_id` differs from `matters.client_id`). Live project: follow-up migration applied via Supabase MCP **`apply_migration`** `wp07_evidence_extractions_rls_via_evidence` (2026-05-14). `.env.example`: optional `PARSER_API_KEY` / `PARSER_PROVIDER` / `PARSER_API_BASE_URL`. `pnpm lint`, `pnpm build`, `pnpm test:e2e` (with `CI=true` recommended when `.env.local` sets `LEXOS_E2E_SKIP_WEBSERVER=1`; Playwright config clears that flag under CI unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`).
 
 ## Work packets
 
-- **Active work packet:** WP-06 — W4-lite Evidence Upload Foundation (`ready_for_review`).
-- **Next:** Operator applies WP-06 migration to live Supabase (if not yet applied), runs manual upload checklist, merges when satisfied; WP-07 extraction next.
+- **Active work packet:** WP-07 — W4-lite Extraction Foundation (`ready_for_review`).
+- **Next:** Operator merges WP-07 when satisfied; apply repo migration `20260514100000_wp07_evidence_extractions_rls_via_evidence.sql` on any Supabase environment that already ran the initial WP-07 RLS migration; WP-08 extraction QA.
 
 ## Blockers
 
 - **Credentials:** `.env.local` remains local-only; never commit.
 - **WP-06 migration on live DB:** Applied via Supabase MCP **`apply_migration`** `wp06_evidence_storage_and_rls` (2026-05-13). Re-apply from repo file if drift.
-- **RLS — remaining tables:** MVP RLS now includes **`sources`** and **`evidence`** (WP-06). **`evidence_extractions`**, stories, assertions, and other legal-domain tables** still have **no** row policies unless listed above. **Not production-grade ABAC**; creator/admin matter model only.
+- **WP-07 RLS on live DB:** Initial `evidence_extractions` RLS plus follow-up **`wp07_evidence_extractions_rls_via_evidence`** applied via MCP (2026-05-14). Other environments: run migrations from repo in order.
+- **RLS — remaining tables:** MVP RLS includes **`sources`**, **`evidence`**, and **`evidence_extractions`** (WP-06–07). Stories, assertions, and other spine tables may still lack policies. **Not production-grade ABAC**; creator/admin matter model only.
 - **Matter + workflow + audits:** Not a single DB transaction from the app; evidence upload uses **best-effort rollback** (delete row + remove storage object + skip audit if a step fails after partial progress).
 - **`supabase link` / CLI:** PAT and IPv6 issues may persist; migrations can be applied via Supabase MCP when needed.
 
@@ -56,7 +58,7 @@ Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload 
 ## Supabase status
 
 - **Project:** `iqoelotzvdcjifajfuto` — `ACTIVE_HEALTHY`, region `ap-southeast-1`, Postgres 17.6.
-- **Migrations:** Repo includes WP-02 (6) + WP-03 (1) + WP-04 RLS + WP-04 hardening + WP-05 intake RLS + **WP-06 evidence storage + RLS** (`20260513120000_wp06_evidence_storage_and_rls.sql`). **Live DB:** WP-06 applied via Supabase MCP **`apply_migration`** (`wp06_evidence_storage_and_rls`) on project `iqoelotzvdcjifajfuto` (2026-05-13).
+- **Migrations:** Repo includes WP-02 (6) + WP-03 (1) + WP-04 RLS + WP-04 hardening + WP-05 intake RLS + **WP-06 evidence storage + RLS** (`20260513120000_wp06_evidence_storage_and_rls.sql`) + **WP-07 evidence_extractions RLS** (`20260513130000_wp07_evidence_extractions_rls.sql`, `20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`). **Live DB:** WP-06 + WP-07 follow-up RLS applied on project `iqoelotzvdcjifajfuto` (see handoff for MCP names/dates).
 - `src/types/database.ts` — unchanged by WP-06 (no new public tables/RPC); regenerate after future DDL.
 - Demo seed file unchanged; optional for local testing.
 
@@ -64,12 +66,12 @@ Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload 
 
 - Auth + profile (WP-03) unchanged.
 - **Clients / matters / intake:** As in WP-04 / WP-05.
-- **Evidence (WP-06):** Matter **Evidence** tab is functional UI: list, upload, detail shell, processing badge (`uploaded`), signed original download, WP-07 extraction placeholder. No extraction pipeline, OCR, or embeddings.
-- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts` and `e2e/wp06-evidence-upload.spec.ts` (evidence uses `setInputFiles`). Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `pnpm test:e2e` — all green.
+- **Evidence (WP-06–07):** Matter **Evidence** tab: list, upload, detail with tabs (Original, Markdown, JSON, Quality, WP-08 QA placeholder), **Run extraction** server action, signed original download. Local text extraction for `.txt`/`.md`; optional layout parser behind env; placeholder `metadata_only` when unsupported or parser missing. No embeddings or WP-08 QA comparator.
+- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts` and `e2e/wp06-evidence-upload.spec.ts` (upload + run extraction assertions). Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `pnpm test:e2e` — all green.
 
 ## Known risks
 
-- **`evidence_extractions`** RLS not added in WP-06 — table still exposed per global grants until a follow-up packet; no app writes yet.
+- **Denormalized `client_id`:** `evidence.client_id` and `matters.client_id` should match; if they drift, prefer the evidence-join RLS migration (`20260514100000_…`) on all environments.
 - Signed URLs are **time-bounded bearer links**; treat as sensitive.
 - Storage policy path parsing must stay aligned with `buildOriginalObjectKey` in [`src/lib/storage/evidence-originals.ts`](src/lib/storage/evidence-originals.ts).
 - Admin detection in RLS uses **`user_profiles.role = 'admin'`** subquery; **`role` and `status` are not user-updatable via PostgREST** on `user_profiles` (WP-04 hardening). Promote/demote roles via **service-role server paths** only.
@@ -77,5 +79,5 @@ Last updated: 2026-05-12 (Playwright E2E WP-05/WP-06 green; `use server` upload 
 
 ## Next recommended step
 
-1. Manual checklist: login → matter → Evidence → upload fake `.txt` → verify Storage object, `evidence` row, `audit_events` (`evidence_uploaded`), second upload does not overwrite first path.
-2. Human review WP-06; merge to `development` when satisfied; set WP-06 to `done` in register; start WP-07.
+1. Manual checklist: upload `.txt` → **Run extraction** → confirm `evidence_extractions` row, parent `evidence` fields, audit `evidence_extraction_created`, Markdown tab content, human-review banner.
+2. Human review WP-07; merge `dev/cursor-w4-extraction` to `development` when satisfied; set WP-07 to `done` in register; start WP-08.

@@ -57,3 +57,20 @@ export async function createEvidenceOriginalSignedUrl(
   if (error) return { url: null, error: error.message };
   return { url: data?.signedUrl ?? null, error: null };
 }
+
+/** Download original bytes (server-side, user-scoped client). Truncates to maxBytes for extraction. */
+export async function downloadEvidenceOriginalBytes(
+  supabase: SupabaseClient<Database>,
+  objectKey: string,
+  maxBytes: number
+): Promise<{ data: Uint8Array | null; error: string | null }> {
+  const bucket = getEvidenceOriginalsBucketName();
+  const { data, error } = await supabase.storage.from(bucket).download(objectKey);
+  if (error) return { data: null, error: error.message };
+  if (!data) return { data: null, error: "Empty download." };
+  const buf = new Uint8Array(await data.arrayBuffer());
+  if (buf.length > maxBytes) {
+    return { data: null, error: `File exceeds extraction size limit (${maxBytes} bytes).` };
+  }
+  return { data: buf, error: null };
+}

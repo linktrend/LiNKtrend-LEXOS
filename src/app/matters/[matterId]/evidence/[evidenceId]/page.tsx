@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAuthContext } from "@/server/auth/context";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMatterBundle, isValidUuid } from "@/server/matters/queries";
-import { getEvidenceForMatter } from "@/server/evidence/queries";
+import { getEvidenceForMatter, listExtractionsForEvidence } from "@/server/evidence/queries";
 import { createEvidenceOriginalSignedUrl } from "@/lib/storage/evidence-originals";
 import { EvidenceDetailShell } from "@/features/evidence/EvidenceDetailShell";
 
@@ -23,6 +23,8 @@ export default async function MatterEvidenceDetailPage({ params }: PageProps) {
   const row = await getEvidenceForMatter(supabase, matterId, evidenceId);
   if (!row) notFound();
 
+  const extractions = await listExtractionsForEvidence(supabase, matterId, evidenceId);
+
   let downloadUrl: string | null = null;
   let downloadError: string | null = null;
   if (row.original_file_uri) {
@@ -31,5 +33,14 @@ export default async function MatterEvidenceDetailPage({ params }: PageProps) {
     downloadError = signed.error;
   }
 
-  return <EvidenceDetailShell matterId={matterId} row={row} downloadUrl={downloadUrl} downloadError={downloadError} />;
+  return (
+    <EvidenceDetailShell
+      matterId={matterId}
+      evidenceId={evidenceId}
+      row={row}
+      downloadUrl={downloadUrl}
+      downloadError={downloadError}
+      extractions={extractions}
+    />
+  );
 }

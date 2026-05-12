@@ -7,6 +7,11 @@ loadEnv({ path: resolve(process.cwd(), ".env.local"), quiet: true });
 // Dedicated E2E overrides (optional); wins over .env.local for duplicate keys.
 loadEnv({ path: resolve(process.cwd(), ".env.e2e.local"), quiet: true, override: true });
 
+// CI must always spawn a dev server for E2E unless explicitly opted out after env load.
+if (process.env.CI && process.env.LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI !== "1") {
+  delete process.env.LEXOS_E2E_SKIP_WEBSERVER;
+}
+
 const baseURL =
   normalizeBaseUrl(process.env.LEXOS_E2E_BASE_URL) || "http://localhost:3000";
 

@@ -847,15 +847,15 @@ Stop if storage bucket is not configured.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
-Codex or Cursor
+Cursor
 
 ## Branch
 
-`dev/codex-w4-extraction`
+`dev/cursor-w4-extraction`
 
 ## Objective
 
@@ -873,12 +873,22 @@ docs/lexos-system-spec/07 LEXOS Model, Tool, and Automation Specification.md
 ## Files / Folders Allowed
 
 ```text
+src/app/matters/[matterId]/evidence/
+src/app/matters/[matterId]/evidence/[evidenceId]/
 src/server/evidence/
 src/server/extraction/
+src/server/audit/
 src/features/evidence/
 src/lib/parser/
 src/lib/extraction/
+src/lib/storage/
+src/components/
 src/types/
+supabase/migrations/
+e2e/
+.env.example
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks

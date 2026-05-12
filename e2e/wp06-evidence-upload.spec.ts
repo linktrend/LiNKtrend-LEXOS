@@ -103,6 +103,23 @@ test.describe("WP-06 evidence upload", () => {
 
     await openLinks.nth(0).click();
     await expect(page.getByRole("link", { name: "Download original" })).toBeVisible({ timeout: 20_000 });
-    await expect(page.getByRole("heading", { name: "Extraction (WP-07)" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Run extraction" })).toBeVisible();
+
+    await page.getByTestId("run-extraction").click();
+    // Server action calls revalidatePath; the detail client remounts and clears useActionState success.
+    // Wait for the submit button to leave its pending label instead of the ephemeral success line.
+    await expect(page.getByTestId("run-extraction")).not.toHaveText(/Running/i, { timeout: 60_000 });
+    const extractionErr = page.getByTestId("extraction-run-error");
+    if (await extractionErr.isVisible().catch(() => false)) {
+      throw new Error(`Run extraction failed: ${(await extractionErr.innerText()).trim()}`);
+    }
+
+    await expect(page.getByTestId("human-review-banner")).toBeVisible({ timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Markdown" }).click();
+    await expect(page.getByTestId("markdown-extraction-panel")).toContainText(
+      /Extracted text|Extraction not performed|LEXOS E2E fixture/i,
+      { timeout: 30_000 }
+    );
   });
 });
