@@ -774,7 +774,7 @@ Stop if W0 is deferred by project decision.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
@@ -803,8 +803,16 @@ docs/lexos-system-spec/09 LEXOS Technical Implementation Architecture.md
 src/app/matters/[matterId]/evidence/
 src/features/evidence/
 src/server/evidence/
+src/server/audit/
+src/server/matters/
+src/server/auth/
 src/lib/storage/
 src/lib/supabase*
+src/types/
+src/components/
+supabase/migrations/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks

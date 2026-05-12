@@ -31,7 +31,11 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# Tooling / OS
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+
 .turbo
 .vercel
 .DS_Store

@@ -6,22 +6,22 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-05 — W0-lite Intake Foundation** — Implemented on `dev/cursor-w0-intake`. Key deliverables:
+**WP-06 — W4-lite Evidence Upload Foundation** — Implemented on `dev/cursor-w4-upload`. Key deliverables:
 
-- `supabase/migrations/20260512120000_wp05_intake_rls.sql` — RLS + owner/admin policies on **`intake_records`**, **`intake_groups`**, **`client_candidates`**, **`matter_candidates`**, **`intake_tasks`**. **Applied to live project via MCP `apply_migration`** (`wp05_intake_rls`).
-- `src/server/intake/queries.ts`, `src/server/intake/mutations.ts` — list/bundle; create intake, candidates, groups; link shared matter; prepare handoff; reject/abandon; `materializeW1FromIntake` (solo or one group + shared matter); group flags-only updates.
-- `src/types/intake.ts` — status allowlists, frozen intake helper.
-- `src/app/intake/*` — list, new, detail + Server Actions (`prepareHandoffFormAction`, `materializeW1FormAction`, lifecycle form actions for Next form typing).
-- `src/features/intake/*` — detail UI, badges, forms.
-- `src/server/clients/mutations.ts`, `src/server/matters/mutations.ts` — optional `created_from_intake_id` / `created_from_matter_candidate_id` for handoff provenance; audit passes `intake_id` when set.
-- `src/components/layout/site-header.tsx` — **Intake** nav → `/intake`.
-- Audit event types used in WP-05 flows: `intake_created`, `client_candidate_created`, `matter_candidate_created`, `intake_group_created`, `intake_rejected`, `intake_abandoned`, `intake_accepted`, `intake_handoff_prepared` (plus existing client/matter events on materialize).
+- `supabase/migrations/20260513120000_wp06_evidence_storage_and_rls.sql` — private Storage bucket **`evidence-originals`**; **`storage.objects`** SELECT/INSERT policies tied to `evidence` + `matters` (owner/admin); **RLS** on **`sources`** and **`evidence`** (matter-scoped, same creator/admin model as WP-04). **Applied to live project via MCP `apply_migration`** (`wp06_evidence_storage_and_rls`, 2026-05-13).
+- `src/lib/storage/evidence-originals.ts` — bucket name from `STORAGE_BUCKET_EVIDENCE_ORIGINALS` (default `evidence-originals`), path builder, filename sanitize, MIME/extension → `evidence_media_type`, `createEvidenceOriginalSignedUrl`.
+- `src/server/evidence/queries.ts`, `mutations.ts` — list/detail; `uploadEvidence` (insert row → Storage upload `upsert: false` → update `original_file_uri`; rollback on failure); audit **`evidence_uploaded`** with `metadata` (`storage_bucket`, `storage_path`, `file_name`, …).
+- `src/app/matters/[matterId]/evidence/actions.ts` — **`uploadEvidenceAction` only** (Next `"use server"` files must not export non-function values). Shared `EVIDENCE_UPLOAD_INITIAL` + `EvidenceUploadState` live in `upload-state.ts`.
+- `src/app/matters/[matterId]/evidence/page.tsx`, `[evidenceId]/page.tsx` — list + upload + detail + signed download link.
+- `src/features/evidence/*` — `EvidenceUploadForm`, `EvidenceTable`, `EvidenceDetailShell` (WP-07 extraction placeholder).
+- `.env.example` — `STORAGE_BUCKET_EVIDENCE_ORIGINALS=evidence-originals`.
+- **`source_id`:** left **null**; `source_type` **`operator_upload`** on new rows.
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **Manual browser:** not re-run in this session after final fixes; operator should run the checklist in the WP-05 plan before merge.
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **Manual browser / Storage / SQL:** operator run after migration apply (see PROJECT_STATE next steps).
 
-**RLS status:** WP-04 tables + **five W0 intake tables** now have MVP policies; other legal-domain tables unchanged.
+**RLS status:** `sources` + `evidence` now MVP-scoped; `evidence_extractions` and other spine tables unchanged.
 
-Next: human review WP-05; merge to `development` when satisfied; set WP-05 to `done` in register.
+Next: apply WP-06 migration live; manual checklist; human review; merge; WP-07 extraction.
 
 ---
 
@@ -29,7 +29,9 @@ Next: human review WP-05; merge to `development` when satisfied; set WP-05 to `d
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
-| 2026-05-12 | Cursor | WP-05 | W0-lite intake UI (`/intake`), server intake module, handoff + W1 materialize with provenance FKs, intake RLS migration applied via MCP `apply_migration`; SiteHeader Intake link; lint+build green; PROJECT_STATE + register + handoff updated; WP-05 → `ready_for_review`. |
+| 2026-05-12 | Cursor | E2E / WP-06 | Fixed Playwright login + WP-06: moved `EVIDENCE_UPLOAD_INITIAL` out of `actions.ts` (was causing **500** / invalid `use server` export); `next.config.ts` `allowedDevOrigins: ['127.0.0.1']`; optional `e2e/global-setup.ts` (`LEXOS_E2E_BOOTSTRAP_AUTH=1`) syncs Auth user + seeds client/matter; WP-06 spec uses table row counts + `data-testid` upload errors; `pnpm test:e2e` + lint + build green. |
+| 2026-05-13 | Cursor | E2E tooling | Playwright: `@playwright/test` + `dotenv`; `playwright.config.ts` (loads `.env.local` / `.env.e2e.local` quietly); `e2e/wp05-intake.spec.ts`, `e2e/wp06-evidence-upload.spec.ts` (`setInputFiles`); fixtures + `pnpm test:e2e`; `tsconfig` excludes `e2e`; `.env.example` documents `LEXOS_E2E_*`. Tests skip without credentials. |
+| 2026-05-13 | Cursor | WP-06 | W4-lite evidence upload UI, Storage originals path, `evidence` + audit `evidence_uploaded`, signed download, migration bucket+storage policies+RLS on sources/evidence; `.env.example` bucket var; lint+build green; PROJECT_STATE + register + handoff; WP-06 → `ready_for_review`. |
 | 2026-05-12 | Cursor | WP-04 hardening | `20260512100000_wp04_security_profile_lock_and_delete_policies.sql`: user_profiles self-update locked (trigger + revoke + RPC); DELETE RLS clients/matters/workflow_states; live DDL via MCP `execute_sql` (3 parts); lint+build green; PROJECT_STATE + handoff updated. |
 | 2026-05-12 | Cursor | WP-04 | Client/matter CRUD UI + server modules; workflow init on matter create; audit events (three types); RLS migration `20260512000001` on clients/matters/workflow_states/audit_events (MCP applied); lint+build green; browser + SQL verification; WP-04 → `ready_for_review`. |
 | 2026-05-12 | Cursor | WP-03 follow-up | Test auth user repaired for GoTrue: `instance_id` zero-UUID, `auth.identities` email row, NULL token columns coalesced to empty string; browser verified login → `/dashboard` (Signed-in User). |
