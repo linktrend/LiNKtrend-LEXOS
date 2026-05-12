@@ -12,6 +12,8 @@ export type CreateMatterInput = {
   posture: MatterPosture;
   jurisdiction?: string | null;
   matter_type?: string | null;
+  created_from_intake_id?: string | null;
+  created_from_matter_candidate_id?: string | null;
 };
 
 /**
@@ -50,6 +52,8 @@ export async function createMatterWithWorkflowAndAudits(
       privilege_status: "unknown",
       created_by: ctx.userId,
       updated_by: ctx.userId,
+      created_from_intake_id: input.created_from_intake_id ?? null,
+      created_from_matter_candidate_id: input.created_from_matter_candidate_id ?? null,
     })
     .select("id")
     .single();
@@ -96,6 +100,7 @@ export async function createMatterWithWorkflowAndAudits(
     actor_type: "user",
     client_id: input.client_id,
     matter_id: matterId,
+    intake_id: input.created_from_intake_id ?? null,
     target_object_type: "matters",
     target_object_id: matterId,
     summary: "Matter created",

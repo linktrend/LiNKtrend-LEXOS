@@ -702,7 +702,7 @@ Stop if schema tables are missing.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
@@ -731,7 +731,16 @@ docs/lexos-system-spec/10 LEXOS Agent Role and Prompt Library.md
 src/app/intake/
 src/features/intake/
 src/server/intake/
+src/server/clients/mutations.ts
+src/server/matters/mutations.ts
+src/server/audit/
+src/server/auth/
+src/types/
+src/components/
 src/lib/
+supabase/migrations/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks

@@ -3,6 +3,7 @@ import Link from "next/link";
 const mainNav = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/intake", label: "Intake" },
   { href: "/clients", label: "Clients" },
   { href: "/matters", label: "Matters" },
 ] as const;

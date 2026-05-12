@@ -8,6 +8,7 @@ export type CreateClientInput = {
   client_type?: string | null;
   jurisdiction?: string | null;
   notes?: string | null;
+  created_from_intake_id?: string | null;
 };
 
 export async function createClientRecord(
@@ -32,6 +33,7 @@ export async function createClientRecord(
       privilege_status: "unknown",
       created_by: ctx.userId,
       updated_by: ctx.userId,
+      created_from_intake_id: input.created_from_intake_id ?? null,
     })
     .select("id")
     .single();
@@ -46,6 +48,7 @@ export async function createClientRecord(
     actor_id: ctx.userId,
     actor_type: "user",
     client_id: clientId,
+    intake_id: input.created_from_intake_id ?? null,
     target_object_type: "clients",
     target_object_id: clientId,
     summary: "Client created",

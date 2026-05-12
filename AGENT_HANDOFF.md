@@ -6,25 +6,22 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-04 — Client / Matter / Workflow Foundation** — Implemented on `dev/cursor-client-matter`. Key deliverables:
+**WP-05 — W0-lite Intake Foundation** — Implemented on `dev/cursor-w0-intake`. Key deliverables:
 
-- `src/server/auth/context.ts` — `getAuthContext()`, `assertCanMutate()` (`read_only` cannot mutate).
-- `src/server/audit/log.ts` — `insertAuditEvent()` for `audit_events` (RLS allows `actor_id = auth.uid()`).
-- `src/server/clients/*`, `src/server/matters/*` — list/get/create with **non-admin scoped by `created_by`**; admin sees all; matter create initializes `workflow_states` (`current_workflow` **W2**, `workflow_status` **not_started**, `next_action` **Create or review Case Story**); **best-effort rollback** if workflow or audit insert fails after matter insert.
-- `src/types/domain.ts` — posture constants; canonical DB value **`defence`** (UI label “Defence”).
-- Routes: `/clients`, `/clients/new`, `/clients/[clientId]`, `/clients/[clientId]/matters/new`, `/matters`, `/matters/[matterId]/overview` (+ matter layout nav shells); dashboard lists recent matters via `listMattersForDashboard`.
-- `supabase/migrations/20260512000001_wp04_clients_matters_workflow_audit_rls.sql` — RLS + policies on **`clients`**, **`matters`**, **`workflow_states`**, **`audit_events`** (owner + admin via `user_profiles.role = 'admin'`). **Applied to live project via MCP.**
-- **Pre-merge security hardening** — `supabase/migrations/20260512100000_wp04_security_profile_lock_and_delete_policies.sql`: blocks **`user_profiles` self-promotion** (drop `users_update_own_profile`, revoke table UPDATE from `authenticated`/`anon`, BEFORE UPDATE trigger + `update_own_user_display_name` RPC); **DELETE** policies on `clients` / `matters` / `workflow_states` for rollback parity. Live DDL applied via MCP **`execute_sql`** (three statements). `handle_new_auth_user()` unchanged.
+- `supabase/migrations/20260512120000_wp05_intake_rls.sql` — RLS + owner/admin policies on **`intake_records`**, **`intake_groups`**, **`client_candidates`**, **`matter_candidates`**, **`intake_tasks`**. **Applied to live project via MCP `apply_migration`** (`wp05_intake_rls`).
+- `src/server/intake/queries.ts`, `src/server/intake/mutations.ts` — list/bundle; create intake, candidates, groups; link shared matter; prepare handoff; reject/abandon; `materializeW1FromIntake` (solo or one group + shared matter); group flags-only updates.
+- `src/types/intake.ts` — status allowlists, frozen intake helper.
+- `src/app/intake/*` — list, new, detail + Server Actions (`prepareHandoffFormAction`, `materializeW1FormAction`, lifecycle form actions for Next form typing).
+- `src/features/intake/*` — detail UI, badges, forms.
+- `src/server/clients/mutations.ts`, `src/server/matters/mutations.ts` — optional `created_from_intake_id` / `created_from_matter_candidate_id` for handoff provenance; audit passes `intake_id` when set.
+- `src/components/layout/site-header.tsx` — **Intake** nav → `/intake`.
+- Audit event types used in WP-05 flows: `intake_created`, `client_candidate_created`, `matter_candidate_created`, `intake_group_created`, `intake_rejected`, `intake_abandoned`, `intake_accepted`, `intake_handoff_prepared` (plus existing client/matter events on materialize).
 
-**Audit event types (verified on demo flow):** `client_created`, `matter_created`, `workflow_state_initialized`.
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **Manual browser:** not re-run in this session after final fixes; operator should run the checklist in the WP-05 plan before merge.
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. Manual browser: create client → create matter → `/matters/.../overview` shows **Posture Defence · Status active · Current W2 · Flow not_started**; SQL confirms workflow row and three audit types for the test client/matter.
+**RLS status:** WP-04 tables + **five W0 intake tables** now have MVP policies; other legal-domain tables unchanged.
 
-**RLS status:** `user_profiles` (WP-03) + **four WP-04 tables** above now have policies; **`user_profiles` role/status are no longer client-updatable** (service role + RPC path only). **Remaining legal-domain tables** (evidence, stories, assertions, etc.) still **without** RLS — not production-grade for those objects.
-
-**Limitation:** Matter + workflow + audits are **not** one atomic DB transaction from the app; rollback is best-effort (documented in `PROJECT_STATE.md`).
-
-Next packet: **WP-05 — W0-lite Intake Foundation** on branch `dev/cursor-w0-intake` (per register).
+Next: human review WP-05; merge to `development` when satisfied; set WP-05 to `done` in register.
 
 ---
 
@@ -32,6 +29,7 @@ Next packet: **WP-05 — W0-lite Intake Foundation** on branch `dev/cursor-w0-in
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-12 | Cursor | WP-05 | W0-lite intake UI (`/intake`), server intake module, handoff + W1 materialize with provenance FKs, intake RLS migration applied via MCP `apply_migration`; SiteHeader Intake link; lint+build green; PROJECT_STATE + register + handoff updated; WP-05 → `ready_for_review`. |
 | 2026-05-12 | Cursor | WP-04 hardening | `20260512100000_wp04_security_profile_lock_and_delete_policies.sql`: user_profiles self-update locked (trigger + revoke + RPC); DELETE RLS clients/matters/workflow_states; live DDL via MCP `execute_sql` (3 parts); lint+build green; PROJECT_STATE + handoff updated. |
 | 2026-05-12 | Cursor | WP-04 | Client/matter CRUD UI + server modules; workflow init on matter create; audit events (three types); RLS migration `20260512000001` on clients/matters/workflow_states/audit_events (MCP applied); lint+build green; browser + SQL verification; WP-04 → `ready_for_review`. |
 | 2026-05-12 | Cursor | WP-03 follow-up | Test auth user repaired for GoTrue: `instance_id` zero-UUID, `auth.identities` email row, NULL token columns coalesced to empty string; browser verified login → `/dashboard` (Signed-in User). |
