@@ -13,7 +13,7 @@ export function EvidenceUploadForm({ matterId }: Props) {
   const [state, formAction, pending] = useActionState(bound, EVIDENCE_UPLOAD_INITIAL);
 
   return (
-    <section className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+    <section id="evidence-upload" className="rounded-lg border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Upload evidence</h2>
       <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
         Original file is stored unchanged. Extraction and QA are WP-07.

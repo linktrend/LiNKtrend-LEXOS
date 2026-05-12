@@ -6,6 +6,9 @@ import type { Database } from "@/types/database";
 import { runExtractionAction, runExtractionQaAction } from "@/app/matters/[matterId]/evidence/[evidenceId]/actions";
 import { EXTRACTION_RUN_INITIAL } from "@/app/matters/[matterId]/evidence/[evidenceId]/run-extraction-state";
 import { EXTRACTION_QA_INITIAL } from "@/app/matters/[matterId]/evidence/[evidenceId]/run-qa-state";
+import { EvidenceAssertionsPlaceholder } from "@/components/evidence/EvidenceAssertionsPlaceholder";
+import { EvidenceStatusBadges } from "@/components/evidence/EvidenceStatusBadges";
+import { EvidenceWarningBanners } from "@/components/evidence/EvidenceWarningBanners";
 
 type EvidenceRow = Database["public"]["Tables"]["evidence"]["Row"];
 type EvidenceExtractionRow = Database["public"]["Tables"]["evidence_extractions"]["Row"];
@@ -21,7 +24,7 @@ function readLastQa(meta: unknown): { at?: string; result?: string } | null {
   return { at, result };
 }
 
-type TabId = "original" | "markdown" | "json" | "quality" | "qa";
+type TabId = "original" | "markdown" | "json" | "quality_qa";
 
 type Props = {
   matterId: string;
@@ -46,12 +49,6 @@ export function EvidenceDetailClient({
 
   const current = extractions.find((e) => e.is_current) ?? extractions[0] ?? null;
   const lastQa = readLastQa(current?.metadata);
-  const showReviewBanner =
-    row.human_review_required ||
-    current?.human_review_required ||
-    current?.extraction_quality_status === "human_review_required" ||
-    current?.extraction_quality_status === "qa_flagged" ||
-    current?.extraction_quality_status === "failed";
 
   const flags = current?.quality_flags;
   const flagsText = Array.isArray(flags) ? flags.join(", ") : flags ? JSON.stringify(flags) : "—";
@@ -68,21 +65,12 @@ export function EvidenceDetailClient({
         <h1 className="mt-2 text-xl font-bold text-zinc-900 dark:text-zinc-100">
           {row.evidence_label ?? row.file_name ?? "Evidence"}
         </h1>
-        <p className="mt-1 text-xs text-zinc-500" data-testid="evidence-status-line">
-          ID {row.id} · Media {row.evidence_media_type ?? "—"} · Processing {row.processing_status ?? "—"}
-          {row.extraction_status ? ` · Extraction ${row.extraction_status}` : ""}
-          {row.quality_status ? ` · Quality ${row.quality_status}` : ""}
-        </p>
+        <div className="mt-3">
+          <EvidenceStatusBadges row={row} current={current} showStatusLine />
+        </div>
       </div>
 
-      {showReviewBanner ? (
-        <div
-          data-testid="human-review-banner"
-          className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100"
-        >
-          Human review may be required. Do not treat extraction as verified until WP-08 QA and review are complete.
-        </div>
-      ) : null}
+      <EvidenceWarningBanners row={row} current={current} />
 
       <div className="flex flex-wrap gap-2 border-b border-zinc-200 pb-2 dark:border-zinc-800">
         {(
@@ -90,8 +78,7 @@ export function EvidenceDetailClient({
             ["original", "Original"],
             ["markdown", "Markdown"],
             ["json", "Structured JSON"],
-            ["quality", "Quality / Flags"],
-            ["qa", "QA (WP-08)"],
+            ["quality_qa", "Quality & QA"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -111,8 +98,12 @@ export function EvidenceDetailClient({
 
       {tab === "original" ? (
         <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Original file</h2>
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Original file (evidentiary anchor)</h2>
           <p className="mt-1 text-xs text-zinc-500">
+            This is the unchanged upload stored in private object storage. Markdown, JSON, and QA tabs are derivative
+            extractions only — they are not a substitute for the original.
+          </p>
+          <p className="mt-2 text-xs text-zinc-500">
             Signed link expires in a few minutes. Refresh the page for a new link.
           </p>
           {downloadError ? (
@@ -137,8 +128,9 @@ export function EvidenceDetailClient({
           className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
         >
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Markdown extraction</h2>
+          <p className="mt-1 text-xs text-zinc-500">Structured extraction output for readability — not original evidence.</p>
           {current?.markdown_text ? (
-            <pre className="mt-3 max-h-[480px] overflow-auto whitespace-pre-wrap rounded-md bg-zinc-50 p-3 text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+            <pre className="mt-3 max-h-[480px] overflow-auto whitespace-pre-wrap rounded-md bg-zinc-50 p-3 font-mono text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
               {current.markdown_text}
             </pre>
           ) : (
@@ -153,8 +145,9 @@ export function EvidenceDetailClient({
           className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
         >
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Structured JSON</h2>
+          <p className="mt-1 text-xs text-zinc-500">Machine-oriented extraction — not original evidence.</p>
           {current?.json_content != null ? (
-            <pre className="mt-3 max-h-[480px] overflow-auto rounded-md bg-zinc-50 p-3 text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+            <pre className="mt-3 max-h-[480px] overflow-auto rounded-md bg-zinc-50 p-3 font-mono text-xs text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
               {JSON.stringify(current.json_content, null, 2)}
             </pre>
           ) : (
@@ -163,80 +156,81 @@ export function EvidenceDetailClient({
         </section>
       ) : null}
 
-      {tab === "quality" ? (
-        <section
-          data-testid="quality-flags-panel"
-          className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
-        >
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Quality / Flags</h2>
-          <dl className="mt-3 space-y-2 text-sm">
-            <div>
-              <dt className="text-xs text-zinc-500">Extraction quality</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{current?.extraction_quality_status ?? "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-zinc-500">Human review required</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{current?.human_review_required ? "Yes" : "No"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-zinc-500">Quality flags</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{flagsText}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-zinc-500">Extraction type</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{current?.extraction_type ?? "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-zinc-500">Tool</dt>
-              <dd className="text-zinc-900 dark:text-zinc-100">{current?.extraction_tool ?? "—"}</dd>
-            </div>
-          </dl>
-        </section>
-      ) : null}
-
-      {tab === "qa" ? (
+      {tab === "quality_qa" ? (
         <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">QA (WP-08)</h2>
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Quality & QA</h2>
           <p className="mt-1 text-xs text-zinc-500">
-            Deterministic structural QA only (no vision or full semantic compare). Original evidence remains the
-            anchor; extraction stays derivative.
+            Extraction quality, flags, and deterministic structural QA (WP-08). Original evidence remains the anchor.
           </p>
-          <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400" data-testid="qa-status-line">
-            Current extraction: {current?.id ?? "—"} · Quality{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              {current?.extraction_quality_status ?? "—"}
-            </span>
-            {lastQa?.at ? ` · Last QA ${lastQa.at}` : ""}
-            {lastQa?.result ? ` · Result ${lastQa.result}` : ""}
-          </p>
-          <div data-testid="qa-flags-panel" className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
-            <span className="font-medium">Post-QA flags:</span> {flagsText}
+
+          <div data-testid="quality-flags-panel" className="mt-4 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Quality / flags</h3>
+            <dl className="mt-3 space-y-2 text-sm">
+              <div>
+                <dt className="text-xs text-zinc-500">Extraction quality</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{current?.extraction_quality_status ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-zinc-500">Human review required</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{current?.human_review_required ? "Yes" : "No"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-zinc-500">Quality flags</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{flagsText}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-zinc-500">Extraction type</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{current?.extraction_type ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-zinc-500">Tool</dt>
+                <dd className="text-zinc-900 dark:text-zinc-100">{current?.extraction_tool ?? "—"}</dd>
+              </div>
+            </dl>
           </div>
-          {current?.notes ? (
-            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
-              <span className="font-medium">Notes:</span> {current.notes}
+
+          <div className="mt-6 border-t border-zinc-100 pt-4 dark:border-zinc-800">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Structural QA (WP-08)</h3>
+            <p className="mt-1 text-xs text-zinc-500">
+              Deterministic structural QA only (no vision or full semantic compare). Extraction stays derivative.
             </p>
-          ) : null}
-          {qaState.error ? (
-            <p data-testid="qa-run-error" className="mt-2 text-sm text-red-700 dark:text-red-300">
-              {qaState.error}
+            <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400" data-testid="qa-status-line">
+              Current extraction: {current?.id ?? "—"} · Quality{" "}
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                {current?.extraction_quality_status ?? "—"}
+              </span>
+              {lastQa?.at ? ` · Last QA ${lastQa.at}` : ""}
+              {lastQa?.result ? ` · Result ${lastQa.result}` : ""}
             </p>
-          ) : null}
-          <form action={qaFormAction} className="mt-3">
-            <input type="hidden" name="matter_id" value={matterId} />
-            <input type="hidden" name="evidence_id" value={evidenceId} />
-            <button
-              type="submit"
-              data-testid="run-extraction-qa"
-              disabled={qaPending || !current || !row.original_file_uri}
-              className="rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:opacity-50"
-            >
-              {qaPending ? "Running QA…" : "Run QA"}
-            </button>
-            {!current ? (
-              <p className="mt-2 text-xs text-zinc-500">Run extraction first, then run QA.</p>
+            <div data-testid="qa-flags-panel" className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
+              <span className="font-medium">Post-QA flags:</span> {flagsText}
+            </div>
+            {current?.notes ? (
+              <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+                <span className="font-medium">Notes:</span> {current.notes}
+              </p>
             ) : null}
-          </form>
+            {qaState.error ? (
+              <p data-testid="qa-run-error" className="mt-2 text-sm text-red-700 dark:text-red-300">
+                {qaState.error}
+              </p>
+            ) : null}
+            <form action={qaFormAction} className="mt-3">
+              <input type="hidden" name="matter_id" value={matterId} />
+              <input type="hidden" name="evidence_id" value={evidenceId} />
+              <button
+                type="submit"
+                data-testid="run-extraction-qa"
+                disabled={qaPending || !current || !row.original_file_uri}
+                className="rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:opacity-50"
+              >
+                {qaPending ? "Running QA…" : "Run QA"}
+              </button>
+              {!current ? (
+                <p className="mt-2 text-xs text-zinc-500">Run extraction first, then run QA.</p>
+              ) : null}
+            </form>
+          </div>
         </section>
       ) : null}
 
@@ -301,6 +295,8 @@ export function EvidenceDetailClient({
           ) : null}
         </form>
       </section>
+
+      <EvidenceAssertionsPlaceholder matterId={matterId} />
     </div>
   );
 }

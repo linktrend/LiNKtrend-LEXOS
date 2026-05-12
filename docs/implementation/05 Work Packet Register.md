@@ -999,7 +999,7 @@ Stop if extraction foundation is not implemented.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
@@ -1024,8 +1024,13 @@ docs/lexos-system-spec/11 LEXOS UI-UX and Operator Experience Specification.md
 
 ```text
 src/app/matters/[matterId]/evidence/
+src/app/matters/[matterId]/evidence/[evidenceId]/
 src/features/evidence/
 src/components/
+src/server/evidence/
+e2e/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks
@@ -1049,7 +1054,8 @@ src/components/
 
 ## Tests Required
 
-Manual UI walkthrough.
+* Playwright E2E (update selectors if UI structure changes);
+* manual UI walkthrough for banner/badge matrix.
 
 ## Stop Conditions
 

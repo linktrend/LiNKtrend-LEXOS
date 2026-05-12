@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { getAuthContext } from "@/server/auth/context";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getMatterBundle, isValidUuid } from "@/server/matters/queries";
-import { listEvidenceForMatter } from "@/server/evidence/queries";
+import { listEvidenceForMatter, listCurrentExtractionSummariesForMatter } from "@/server/evidence/queries";
 import { EvidenceUploadForm } from "@/features/evidence/EvidenceUploadForm";
 import { EvidenceTable } from "@/features/evidence/EvidenceTable";
 
@@ -21,6 +21,11 @@ export default async function MatterEvidencePage({ params }: PageProps) {
   if (!bundle) notFound();
 
   const rows = await listEvidenceForMatter(supabase, matterId);
+  const extractionSummaries = await listCurrentExtractionSummariesForMatter(
+    supabase,
+    matterId,
+    rows.map((r) => r.id)
+  );
 
   return (
     <div className="space-y-8">
@@ -34,7 +39,7 @@ export default async function MatterEvidencePage({ params }: PageProps) {
       <EvidenceUploadForm matterId={matterId} />
       <div>
         <h3 className="mb-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">Evidence list</h3>
-        <EvidenceTable matterId={matterId} rows={rows} />
+        <EvidenceTable matterId={matterId} rows={rows} extractionSummaries={extractionSummaries} />
       </div>
     </div>
   );

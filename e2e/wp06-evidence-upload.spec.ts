@@ -122,7 +122,7 @@ test.describe("WP-06 evidence upload", () => {
       { timeout: 30_000 }
     );
 
-    await page.getByRole("button", { name: "QA (WP-08)" }).click();
+    await page.getByRole("button", { name: "Quality & QA" }).click();
     await expect(page.getByTestId("qa-status-line")).toBeVisible();
     await page.getByTestId("run-extraction-qa").click();
     await expect(page.getByTestId("run-extraction-qa")).not.toHaveText(/Running QA/i, { timeout: 60_000 });

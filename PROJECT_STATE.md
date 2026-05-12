@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-14 (WP-08 deterministic extraction QA; Playwright upload→extract→QA path)
+Last updated: 2026-05-12 (WP-09 Evidence Workspace UI; list badges + detail banners; Playwright green)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-14 (WP-08 deterministic extraction QA; Playwright upload�
 
 ## Phase and branch
 
-- **Current phase:** Phase 5 — W4-lite evidence ingestion (upload, extraction, deterministic QA; W5 next)
-- **Current branch:** `dev/cursor-w4-qa` (WP-08 implementation)
+- **Current phase:** Phase 5 — W4-lite evidence ingestion (upload, extraction, deterministic QA; evidence UX polish WP-09)
+- **Current branch:** `dev/cursor-ui-evidence` (WP-09 implementation)
 
 ## Documentation structure
 
@@ -35,11 +35,12 @@ Last updated: 2026-05-14 (WP-08 deterministic extraction QA; Playwright upload�
 - **WP-06:** Evidence upload under matter (`/matters/[matterId]/evidence`, detail `/matters/[matterId]/evidence/[evidenceId]`); `src/server/evidence/*`, `src/lib/storage/evidence-originals.ts`, `src/features/evidence/*`; Server Action upload → insert `evidence` → Storage upload (`evidence-originals`, path `client/{client_id}/matter/{matter_id}/evidence/{evidence_id}/original/{filename}`) → patch `original_file_uri`; audit `evidence_uploaded`; signed download URL on detail page; **`original_file_hash` deferred** (null). Migration **`20260513120000_wp06_evidence_storage_and_rls.sql`**: private bucket + `storage.objects` policies + RLS on **`sources`** and **`evidence`** (matter owner / admin). `.env.example`: optional `STORAGE_BUCKET_EVIDENCE_ORIGINALS`. `pnpm run lint` / `pnpm run build` green.
 - **WP-07:** W4-lite extraction runner (`src/server/extraction/runner.ts`), classification (`src/lib/extraction/classify.ts`), parser adapters (`src/lib/parser/*`), `runExtractionAction` + Evidence Detail tabs (Markdown / JSON / Quality / WP-08 placeholder); `evidence_extractions` writes + parent `evidence` status updates; audits `evidence_extraction_*`. Migrations **`20260513130000_wp07_evidence_extractions_rls.sql`** (initial RLS) and **`20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`** (policies join parent `evidence` so inserts are not denied when denormalized `client_id` differs from `matters.client_id`). Live project: follow-up migration applied via Supabase MCP **`apply_migration`** `wp07_evidence_extractions_rls_via_evidence` (2026-05-14). `.env.example`: optional `PARSER_API_KEY` / `PARSER_PROVIDER` / `PARSER_API_BASE_URL`. `pnpm lint`, `pnpm build`, `pnpm test:e2e` (with `CI=true` recommended when `.env.local` sets `LEXOS_E2E_SKIP_WEBSERVER=1`; Playwright config clears that flag under CI unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`).
 - **WP-08:** Deterministic extraction QA (`src/lib/extraction/qa/types.ts`, `comparator.ts`; `src/server/extraction/run-qa.ts`): structural checks, merged `quality_flags`, `extraction_quality_status` (`failed` / `qa_flagged` / `human_review_required` / narrow **`accepted`** for `text_document` + `local_utf8` without parser-risk flags); `metadata.last_qa` audit trail on extraction row; parent `evidence` processing/quality updates; audits `evidence_extraction_qa_started` / `evidence_extraction_qa_completed` / `evidence_extraction_qa_failed`; **`runExtractionQaAction`** + QA tab in Evidence Detail. No embeddings, no W5, no LLM/visual comparator. **`CI=true pnpm test:e2e`** green (includes upload → extract → QA).
+- **WP-09:** Evidence workspace UI on `dev/cursor-ui-evidence`: `src/components/evidence/*` (status badges, stacked warning banners, W5 assertions placeholder); evidence list columns (processing, extraction, extraction quality from batched current-extraction query, matter quality, review); richer empty state + `#evidence-upload`; detail merges **Quality & QA** tab (preserves `quality-flags-panel`, `qa-status-line`, `qa-flags-panel`, `run-extraction-qa`); original vs derivative copy; `listCurrentExtractionSummariesForMatter` in `src/server/evidence/queries.ts`. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`** green.
 
 ## Work packets
 
-- **Active work packet:** WP-08 — W4-lite Extraction QA Comparator (`ready_for_review`).
-- **Next:** Operator review/merge `dev/cursor-w4-qa`; set WP-08 `done` when merged; W5 Support Matrix (separate packet) per roadmap.
+- **Active work packet:** WP-09 — Evidence Workspace UI (`ready_for_review` on branch `dev/cursor-ui-evidence`).
+- **Next:** Operator review/merge WP-09; set WP-09 `done` when merged; W5 Support Matrix when scheduled.
 
 ## Blockers
 
@@ -67,8 +68,8 @@ Last updated: 2026-05-14 (WP-08 deterministic extraction QA; Playwright upload�
 
 - Auth + profile (WP-03) unchanged.
 - **Clients / matters / intake:** As in WP-04 / WP-05.
-- **Evidence (WP-06–08):** Matter **Evidence** tab: list, upload, detail with tabs (Original, Markdown, JSON, Quality, **QA**), **Run extraction** and **Run QA** server actions, signed original download. Local text extraction for `.txt`/`.md`; optional layout parser; placeholder `metadata_only` when unsupported. Deterministic QA updates extraction quality + flags; narrow machine **`accepted`** for local UTF-8 text path only. No embeddings; no full semantic/visual QA.
-- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts` and `e2e/wp06-evidence-upload.spec.ts` (upload + run extraction + **Run QA** assertions). Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `pnpm test:e2e` — all green.
+- **Evidence (WP-06–09):** Matter **Evidence** tab: list with processing / extraction / current extraction quality / review badges; upload (`#evidence-upload`); detail with status strip, stacked contextual banners, tabs (Original, Markdown, JSON, **Quality & QA**), **Run extraction** and **Run QA** (in Quality & QA), signed original download, static **Linked assertions (W5)** placeholder. Local text extraction for `.txt`/`.md`; optional layout parser; placeholder `metadata_only` when unsupported. Deterministic QA updates extraction quality + flags; narrow machine **`accepted`** for local UTF-8 text path only. No embeddings; no full semantic/visual QA.
+- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts` and `e2e/wp06-evidence-upload.spec.ts` (upload + run extraction + open **Quality & QA** + **Run QA** assertions). Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `pnpm test:e2e` — all green.
 
 ## Known risks
 
@@ -81,5 +82,6 @@ Last updated: 2026-05-14 (WP-08 deterministic extraction QA; Playwright upload�
 
 ## Next recommended step
 
-1. Manual checklist: upload `.txt` → **Run extraction** → **Run QA** → confirm `evidence_extractions` (`extraction_quality_status`, `quality_flags`, `metadata.last_qa`), parent `evidence`, audits `evidence_extraction_qa_*`.
-2. Human review WP-08; merge `dev/cursor-w4-qa` to `development` when satisfied; set WP-08 to `done` in register; proceed to W5 packet when scheduled.
+1. Operator review WP-09 on `dev/cursor-ui-evidence`; merge to `development` when satisfied; set WP-09 to `done` in the work packet register.
+2. Manual checklist: evidence list badges and empty state; detail banners (placeholder vs post-QA); **Quality & QA** tab; assertions placeholder.
+3. Proceed to W5 packet when scheduled.

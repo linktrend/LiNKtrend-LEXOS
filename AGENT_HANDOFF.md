@@ -6,19 +6,18 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-08 — W4-lite Extraction QA Comparator** — Implemented on `dev/cursor-w4-qa`. Key deliverables:
+**WP-09 — Evidence Workspace UI** — Implemented on `dev/cursor-ui-evidence`. Key deliverables:
 
-- **`src/lib/extraction/qa/types.ts`**, **`comparator.ts`** — deterministic structural QA: linkage, original URI, `extraction_type` DB validity, JSON shape, markdown presence, placeholder/parser-risk rules; merged `quality_flags` (deduped) including `qa_deterministic_review`; narrow **`accepted`** only for `text_document` + `local_utf8` + `json.kind === "text_extraction"` with no parser-risk flags; **`raw_ocr_fallback`** cannot become `accepted`.
-- **`src/server/extraction/run-qa.ts`** — `runExtractionQA`: audits `evidence_extraction_qa_started` / `_completed` / `_failed`; updates **`evidence_extractions`** (`extraction_quality_status`, `human_review_required`, `quality_flags`, `extraction_quality_score`, `notes`, `metadata.last_qa`); updates parent **`evidence`** (`processing_status`, `extraction_status`, `quality_status`, `human_review_required`, `metadata_json` QA timestamps).
-- **App:** **`runExtractionQaAction`** in [`actions.ts`](src/app/matters/[matterId]/evidence/[evidenceId]/actions.ts); [`run-qa-state.ts`](src/app/matters/[matterId]/evidence/[evidenceId]/run-qa-state.ts); QA tab + **`run-extraction-qa`**, **`qa-status-line`**, **`qa-flags-panel`**, **`qa-run-error`** in [`EvidenceDetailClient.tsx`](src/features/evidence/EvidenceDetailClient.tsx).
-- **E2E:** [`e2e/wp06-evidence-upload.spec.ts`](e2e/wp06-evidence-upload.spec.ts) — after extraction, open QA tab, run QA, assert status/flags.
-- **Register:** WP-08 — Cursor, branch `dev/cursor-w4-qa`, expanded allowed paths, `ready_for_review`.
+- **`src/components/evidence/`** — `evidenceBadgeStyles.ts` (shared badge classes); **`EvidenceStatusBadges`** (detail status strip + `evidence-status-line`); **`EvidenceWarningBanners`** (stacked alerts: no original, no extraction, placeholder, failed, QA-flagged, parser-risk, accepted caveat, `human-review-banner`); **`EvidenceAssertionsPlaceholder`** (W5 static copy + disabled CTA).
+- **`src/server/evidence/queries.ts`** — **`listCurrentExtractionSummariesForMatter`** batched current-extraction fields for list badges (no N+1).
+- **`EvidenceTable`** — columns: processing, extraction, extraction quality, matter quality, review; `data-testid` `evidence-table`, `evidence-list-empty`, `evidence-row-{id}`; empty state links to `#evidence-upload`.
+- **`EvidenceDetailClient`** — merged **Quality & QA** tab (keeps `quality-flags-panel`, `qa-status-line`, `qa-flags-panel`, `run-extraction-qa`); original “evidentiary anchor” copy; metadata → run extraction → assertions placeholder.
+- **`EvidenceUploadForm`** — `id="evidence-upload"` on section for anchor.
+- **E2E:** [`e2e/wp06-evidence-upload.spec.ts`](e2e/wp06-evidence-upload.spec.ts) — tab button **Quality & QA** (was QA WP-08).
 
-**Gap vs canonical W4 §11:** No LLM agent, no vision/page OCR comparator—structural MVP only; full comparator remains future work.
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 2 tests passed.
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true LEXOS_E2E_BOOTSTRAP_AUTH=1 pnpm test:e2e`** — 2 tests passed.
-
-Next: operator merge; WP-08 → `done` in register; W5 when scheduled.
+Next: operator merge WP-09; register WP-09 → `done` when merged; W5 when scheduled.
 
 ---
 
@@ -26,6 +25,7 @@ Next: operator merge; WP-08 → `done` in register; W5 when scheduled.
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-12 | Cursor | WP-09 | Evidence workspace UI: components, batched extraction summaries for list, table + empty state, detail merge Quality&QA + banners + W5 placeholder; E2E selector update; lint+build+E2E green; PROJECT_STATE + register `ready_for_review` + handoff. |
 | 2026-05-14 | Cursor | WP-08 | Deterministic extraction QA comparator, run-qa server path, QA tab + server action, audit events, E2E upload→extract→QA; lint+build+E2E green; PROJECT_STATE + register `ready_for_review`. |
 | 2026-05-14 | Cursor | WP-07 | W4-lite extraction runner, parser adapters, evidence detail UI + server action, `evidence_extractions` RLS + follow-up join policies (MCP applied live), E2E extraction path + Playwright CI webServer fix; lint + build + E2E green; PROJECT_STATE + register → `ready_for_review`. |
 | 2026-05-12 | Cursor | E2E / WP-06 | Fixed Playwright login + WP-06: moved `EVIDENCE_UPLOAD_INITIAL` out of `actions.ts` (invalid `use server` export); `next.config.ts` `allowedDevOrigins: ['127.0.0.1']`; optional `e2e/global-setup.ts` (`LEXOS_E2E_BOOTSTRAP_AUTH=1`); WP-06 spec + `data-testid` upload errors; `pnpm test:e2e` + lint + build green. |

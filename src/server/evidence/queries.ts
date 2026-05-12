@@ -72,3 +72,35 @@ export async function getCurrentExtractionForEvidence(
   if (error || !data) return null;
   return data as EvidenceExtractionRow;
 }
+
+/** Current extraction fields needed for evidence list badges (one query per matter, avoids N+1). */
+export type EvidenceCurrentExtractionSummary = Pick<
+  EvidenceExtractionRow,
+  "evidence_id" | "extraction_quality_status" | "human_review_required" | "quality_flags" | "extraction_type"
+>;
+
+export async function listCurrentExtractionSummariesForMatter(
+  supabase: SupabaseClient<Database>,
+  matterId: string,
+  evidenceIds: string[]
+): Promise<Map<string, EvidenceCurrentExtractionSummary>> {
+  const out = new Map<string, EvidenceCurrentExtractionSummary>();
+  if (!isValidUuid(matterId)) return out;
+
+  const validIds = evidenceIds.filter((id) => isValidUuid(id));
+  if (validIds.length === 0) return out;
+
+  const { data, error } = await supabase
+    .from("evidence_extractions")
+    .select("evidence_id, extraction_quality_status, human_review_required, quality_flags, extraction_type")
+    .eq("matter_id", matterId)
+    .eq("is_current", true)
+    .in("evidence_id", validIds);
+  if (error || !data) return out;
+
+  for (const row of data) {
+    const r = row as EvidenceCurrentExtractionSummary;
+    if (r.evidence_id) out.set(r.evidence_id, r);
+  }
+  return out;
+}
