@@ -39,6 +39,8 @@ select policyname, cmd, roles, qual from pg_policies where schemaname = 'public'
 
 **Known blocker:** RLS is enabled only on `user_profiles`. All 25 other tables remain open to authenticated queries. Must be resolved in WP-04+ before production use.
 
+**Auth test user (SQL-created):** If a user is inserted only into `auth.users`, fix these before password login works with current GoTrue: set `instance_id` to `00000000-0000-0000-0000-000000000000` (not SQL NULL); add an `auth.identities` row for provider `email`; set `confirmation_token`, `recovery_token`, `email_change_token_new`, and `email_change` to `''` instead of NULL (GoTrue scan error otherwise). Prefer creating users via Dashboard or Admin API.
+
 Next packet: **WP-04 — Client/Matter/Intake Core** on branch `dev/cursor-intake`.
 
 ---
@@ -47,6 +49,7 @@ Next packet: **WP-04 — Client/Matter/Intake Core** on branch `dev/cursor-intak
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-12 | Cursor | WP-03 follow-up | Test auth user repaired for GoTrue: `instance_id` zero-UUID, `auth.identities` email row, NULL token columns coalesced to empty string; browser verified login → `/dashboard` (Signed-in User). |
 | 2026-05-11 | Cursor | WP-03 | Auth foundation: server/admin clients, proxy route protection, login page (Server Action), logout route, user_profiles RLS + trigger (migration 007 applied via MCP), dashboard profile display; lint+build green; WP-03 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-02 (push) | 6 migrations applied to live project `iqoelotzvdcjifajfuto` via MCP; 26 tables confirmed; full types auto-generated; lint+build green; WP-02 → `ready_for_review` (live). |
 | 2026-05-11 | Cursor | WP-02 | 26-table Supabase schema; 6 migrations; vector(3072) Gemini; RLS deferred; demo seed (no real data); type stub; lint+build green; WP-02 → `ready_for_review`. |
