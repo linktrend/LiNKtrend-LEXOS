@@ -926,15 +926,15 @@ Stop if Evidence Object schema is missing.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
-Codex
+Cursor
 
 ## Branch
 
-`dev/codex-w4-qa`
+`dev/cursor-w4-qa`
 
 ## Objective
 
@@ -951,10 +951,21 @@ docs/implementation/04 MVP Acceptance Test Plan.md
 ## Files / Folders Allowed
 
 ```text
+src/app/matters/[matterId]/evidence/
+src/app/matters/[matterId]/evidence/[evidenceId]/
+src/server/evidence/
 src/server/extraction/
-src/lib/extraction/
+src/server/audit/
 src/features/evidence/
-tests/
+src/lib/parser/
+src/lib/extraction/
+src/lib/storage/
+src/components/
+src/types/
+e2e/
+.env.example
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks
@@ -964,6 +975,7 @@ tests/
 3. Add quality flags.
 4. Add `qa_flagged`, `failed`, and `human_review_required` flows.
 5. Ensure failed/QA flagged extraction remains visible.
+6. Server action **Run QA** on Evidence Detail + E2E path.
 
 ## Acceptance Criteria
 
@@ -974,8 +986,8 @@ tests/
 
 ## Tests Required
 
-* unit tests for QA status logic;
-* manual UI verification if UI exists.
+* Playwright E2E: evidence upload → extraction → QA path (`e2e/wp06-evidence-upload.spec.ts` or dedicated WP-08 spec);
+* deterministic QA logic in `src/lib/extraction/qa/*` (unit tests optional if Vitest is added later).
 
 ## Stop Conditions
 

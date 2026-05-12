@@ -121,5 +121,21 @@ test.describe("WP-06 evidence upload", () => {
       /Extracted text|Extraction not performed|LEXOS E2E fixture/i,
       { timeout: 30_000 }
     );
+
+    await page.getByRole("button", { name: "QA (WP-08)" }).click();
+    await expect(page.getByTestId("qa-status-line")).toBeVisible();
+    await page.getByTestId("run-extraction-qa").click();
+    await expect(page.getByTestId("run-extraction-qa")).not.toHaveText(/Running QA/i, { timeout: 60_000 });
+    const qaErr = page.getByTestId("qa-run-error");
+    if (await qaErr.isVisible().catch(() => false)) {
+      throw new Error(`Run QA failed: ${(await qaErr.innerText()).trim()}`);
+    }
+    await expect(page.getByTestId("qa-status-line")).toContainText(
+      /accepted|qa_flagged|human_review_required|failed/i,
+      { timeout: 15_000 }
+    );
+    await expect(page.getByTestId("qa-flags-panel")).toContainText(/qa_deterministic_review|qa_check_failed/i, {
+      timeout: 10_000,
+    });
   });
 });

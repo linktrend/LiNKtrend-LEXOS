@@ -3,11 +3,23 @@
 import Link from "next/link";
 import { useActionState, useState } from "react";
 import type { Database } from "@/types/database";
-import { runExtractionAction } from "@/app/matters/[matterId]/evidence/[evidenceId]/actions";
+import { runExtractionAction, runExtractionQaAction } from "@/app/matters/[matterId]/evidence/[evidenceId]/actions";
 import { EXTRACTION_RUN_INITIAL } from "@/app/matters/[matterId]/evidence/[evidenceId]/run-extraction-state";
+import { EXTRACTION_QA_INITIAL } from "@/app/matters/[matterId]/evidence/[evidenceId]/run-qa-state";
 
 type EvidenceRow = Database["public"]["Tables"]["evidence"]["Row"];
 type EvidenceExtractionRow = Database["public"]["Tables"]["evidence_extractions"]["Row"];
+
+function readLastQa(meta: unknown): { at?: string; result?: string } | null {
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) return null;
+  const last = (meta as Record<string, unknown>).last_qa;
+  if (!last || typeof last !== "object" || Array.isArray(last)) return null;
+  const o = last as Record<string, unknown>;
+  const at = typeof o.at === "string" ? o.at : undefined;
+  const result = typeof o.result === "string" ? o.result : undefined;
+  if (!at && !result) return null;
+  return { at, result };
+}
 
 type TabId = "original" | "markdown" | "json" | "quality" | "qa";
 
@@ -30,13 +42,16 @@ export function EvidenceDetailClient({
 }: Props) {
   const [tab, setTab] = useState<TabId>("original");
   const [state, formAction, pending] = useActionState(runExtractionAction, EXTRACTION_RUN_INITIAL);
+  const [qaState, qaFormAction, qaPending] = useActionState(runExtractionQaAction, EXTRACTION_QA_INITIAL);
 
   const current = extractions.find((e) => e.is_current) ?? extractions[0] ?? null;
+  const lastQa = readLastQa(current?.metadata);
   const showReviewBanner =
     row.human_review_required ||
     current?.human_review_required ||
     current?.extraction_quality_status === "human_review_required" ||
-    current?.extraction_quality_status === "qa_flagged";
+    current?.extraction_quality_status === "qa_flagged" ||
+    current?.extraction_quality_status === "failed";
 
   const flags = current?.quality_flags;
   const flagsText = Array.isArray(flags) ? flags.join(", ") : flags ? JSON.stringify(flags) : "—";
@@ -180,11 +195,48 @@ export function EvidenceDetailClient({
       ) : null}
 
       {tab === "qa" ? (
-        <section className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900/40">
-          <h2 className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">QA (WP-08)</h2>
-          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-            Extraction QA comparator, deterministic checks, and acceptance workflows ship in WP-08.
+        <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">QA (WP-08)</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            Deterministic structural QA only (no vision or full semantic compare). Original evidence remains the
+            anchor; extraction stays derivative.
           </p>
+          <p className="mt-3 text-xs text-zinc-600 dark:text-zinc-400" data-testid="qa-status-line">
+            Current extraction: {current?.id ?? "—"} · Quality{" "}
+            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              {current?.extraction_quality_status ?? "—"}
+            </span>
+            {lastQa?.at ? ` · Last QA ${lastQa.at}` : ""}
+            {lastQa?.result ? ` · Result ${lastQa.result}` : ""}
+          </p>
+          <div data-testid="qa-flags-panel" className="mt-2 text-xs text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium">Post-QA flags:</span> {flagsText}
+          </div>
+          {current?.notes ? (
+            <p className="mt-2 text-xs text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium">Notes:</span> {current.notes}
+            </p>
+          ) : null}
+          {qaState.error ? (
+            <p data-testid="qa-run-error" className="mt-2 text-sm text-red-700 dark:text-red-300">
+              {qaState.error}
+            </p>
+          ) : null}
+          <form action={qaFormAction} className="mt-3">
+            <input type="hidden" name="matter_id" value={matterId} />
+            <input type="hidden" name="evidence_id" value={evidenceId} />
+            <button
+              type="submit"
+              data-testid="run-extraction-qa"
+              disabled={qaPending || !current || !row.original_file_uri}
+              className="rounded-md bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:opacity-50"
+            >
+              {qaPending ? "Running QA…" : "Run QA"}
+            </button>
+            {!current ? (
+              <p className="mt-2 text-xs text-zinc-500">Run extraction first, then run QA.</p>
+            ) : null}
+          </form>
         </section>
       ) : null}
 
