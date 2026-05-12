@@ -6,42 +6,24 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-03 — Auth and User Profile Foundation** — Auth flow implemented on `dev/cursor-auth`. Key deliverables:
+**WP-04 — Client / Matter / Workflow Foundation** — Implemented on `dev/cursor-client-matter`. Key deliverables:
 
-- `src/lib/supabase/server.ts` — `@supabase/ssr` cookie-based server client (Server Components, Server Actions, Route Handlers).
-- `src/lib/supabase/admin.ts` — service-role admin client (server-only; `SUPABASE_SERVICE_ROLE_KEY`; `persistSession: false`).
-- `src/lib/supabase/client.ts` — updated with `Database` type generic.
-- `src/types/auth.ts` — `UserRole`, `UserStatus`, `UserProfile` TypeScript types.
-- `src/proxy.ts` — Next.js 16 proxy (route protection + session refresh); unauthenticated requests redirected to `/login`; already-authenticated `/login` redirected to `/dashboard`.
-- `src/app/login/page.tsx`, `LoginForm.tsx`, `actions.ts` — email+password login via `signInWithPassword` Server Action (`useActionState`).
-- `src/app/logout/route.ts` — POST Route Handler; `signOut` + redirect `/login`.
-- `src/app/dashboard/page.tsx` — fetches `user_profiles` row (name + role); admin-client fallback profile creation with `audit_events` log; logout button.
-- `supabase/migrations/20260511000007_wp03_auth_rls_trigger.sql` — `user_profiles` RLS enabled; `users_read_own_profile` + `users_update_own_profile` policies; `handle_new_auth_user` `SECURITY DEFINER` trigger on `auth.users`. **Applied to live project via MCP.**
+- `src/server/auth/context.ts` — `getAuthContext()`, `assertCanMutate()` (`read_only` cannot mutate).
+- `src/server/audit/log.ts` — `insertAuditEvent()` for `audit_events` (RLS allows `actor_id = auth.uid()`).
+- `src/server/clients/*`, `src/server/matters/*` — list/get/create with **non-admin scoped by `created_by`**; admin sees all; matter create initializes `workflow_states` (`current_workflow` **W2**, `workflow_status` **not_started**, `next_action` **Create or review Case Story**); **best-effort rollback** if workflow or audit insert fails after matter insert.
+- `src/types/domain.ts` — posture constants; canonical DB value **`defence`** (UI label “Defence”).
+- Routes: `/clients`, `/clients/new`, `/clients/[clientId]`, `/clients/[clientId]/matters/new`, `/matters`, `/matters/[matterId]/overview` (+ matter layout nav shells); dashboard lists recent matters via `listMattersForDashboard`.
+- `supabase/migrations/20260512000001_wp04_clients_matters_workflow_audit_rls.sql` — RLS + policies on **`clients`**, **`matters`**, **`workflow_states`**, **`audit_events`** (owner + admin via `user_profiles.role = 'admin'`). **Applied to live project via MCP.**
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean (TypeScript pass, no warnings). Migration 007 confirmed applied via MCP `{"success":true}`.
+**Audit event types (verified on demo flow):** `client_created`, `matter_created`, `workflow_state_initialized`.
 
-**Pending operator action before manual testing:** Create `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (from Supabase dashboard → API Settings). Run manual auth verification checklist below.
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. Manual browser: create client → create matter → `/matters/.../overview` shows **Posture Defence · Status active · Current W2 · Flow not_started**; SQL confirms workflow row and three audit types for the test client/matter.
 
-**Manual auth verification checklist:**
-- [ ] Visit `http://localhost:3000/dashboard` → redirected to `/login`
-- [ ] Visit `http://localhost:3000/matters` → redirected to `/login`
-- [ ] Login with valid test credentials → redirected to `/dashboard`
-- [ ] Dashboard shows `display_name` and `role` from `user_profiles`
-- [ ] Logout → redirected to `/login`
-- [ ] Visit `/dashboard` after logout → redirected to `/login`
-- [ ] Visit `/login` when already authenticated → redirected to `/dashboard`
+**RLS status:** `user_profiles` (WP-03) + **four WP-04 tables** above now have policies. **Remaining legal-domain tables** (evidence, stories, assertions, etc.) still **without** RLS — not production-grade for those objects.
 
-**RLS spot-check (Supabase dashboard SQL editor):**
-```sql
-select tablename, rowsecurity from pg_tables where schemaname = 'public' order by tablename;
-select policyname, cmd, roles, qual from pg_policies where schemaname = 'public' and tablename = 'user_profiles';
-```
+**Limitation:** Matter + workflow + audits are **not** one atomic DB transaction from the app; rollback is best-effort (documented in `PROJECT_STATE.md`).
 
-**Known blocker:** RLS is enabled only on `user_profiles`. All 25 other tables remain open to authenticated queries. Must be resolved in WP-04+ before production use.
-
-**Auth test user (SQL-created):** If a user is inserted only into `auth.users`, fix these before password login works with current GoTrue: set `instance_id` to `00000000-0000-0000-0000-000000000000` (not SQL NULL); add an `auth.identities` row for provider `email`; set `confirmation_token`, `recovery_token`, `email_change_token_new`, and `email_change` to `''` instead of NULL (GoTrue scan error otherwise). Prefer creating users via Dashboard or Admin API.
-
-Next packet: **WP-04 — Client/Matter/Intake Core** on branch `dev/cursor-intake`.
+Next packet: **WP-05 — W0-lite Intake Foundation** on branch `dev/cursor-w0-intake` (per register).
 
 ---
 
@@ -49,6 +31,7 @@ Next packet: **WP-04 — Client/Matter/Intake Core** on branch `dev/cursor-intak
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
+| 2026-05-12 | Cursor | WP-04 | Client/matter CRUD UI + server modules; workflow init on matter create; audit events (three types); RLS migration `20260512000001` on clients/matters/workflow_states/audit_events (MCP applied); lint+build green; browser + SQL verification; WP-04 → `ready_for_review`. |
 | 2026-05-12 | Cursor | WP-03 follow-up | Test auth user repaired for GoTrue: `instance_id` zero-UUID, `auth.identities` email row, NULL token columns coalesced to empty string; browser verified login → `/dashboard` (Signed-in User). |
 | 2026-05-11 | Cursor | WP-03 | Auth foundation: server/admin clients, proxy route protection, login page (Server Action), logout route, user_profiles RLS + trigger (migration 007 applied via MCP), dashboard profile display; lint+build green; WP-03 → `ready_for_review`. |
 | 2026-05-11 | Cursor | WP-02 (push) | 6 migrations applied to live project `iqoelotzvdcjifajfuto` via MCP; 26 tables confirmed; full types auto-generated; lint+build green; WP-02 → `ready_for_review` (live). |

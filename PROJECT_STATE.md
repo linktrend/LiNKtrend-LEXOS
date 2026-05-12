@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-11 (WP-03 auth and user profile foundation complete)
+Last updated: 2026-05-12 (WP-04 Client / Matter / Workflow Foundation complete)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-11 (WP-03 auth and user profile foundation complete)
 
 ## Phase and branch
 
-- **Current phase:** Phase 3 — Auth and User Profile Foundation
-- **Current branch:** `dev/cursor-auth` (WP-03 in progress)
+- **Current phase:** Phase 4 — Client / Matter / Workflow Foundation (MVP data + UI)
+- **Current branch:** `dev/cursor-client-matter` (WP-04 implementation)
 
 ## Documentation structure
 
@@ -22,29 +22,27 @@ Last updated: 2026-05-11 (WP-03 auth and user profile foundation complete)
 | `docs/source-briefings/` | Legacy briefing and historical material only; not authoritative for implementation. |
 | `.cursor/rules/` | LEXOS agent and architecture rules for Cursor. |
 | `.cursor/skills/` | Project-scoped skills for Cursor. |
-| `src/app/` | Next.js App Router routes and layouts (LEXOS UI shell). |
-| `supabase/migrations/` | Postgres migrations (WP-02 + WP-03). |
+| `src/app/` | Next.js App Router routes and layouts (LEXOS UI). |
+| `supabase/migrations/` | Postgres migrations (WP-02 schema + WP-03 auth + **WP-04 RLS**). |
 | `supabase/seed/` | Demo seed data (fake only). |
 
 ## Completed setup work
 
 - Canonical specs and implementation documents under `docs/`.
-- WP-00: project control files, `.gitignore`, `.env.example`.
-- WP-01: Next.js 16 + React 19 + TypeScript + Tailwind v4 app scaffold; all matter sub-route shells; Supabase browser client placeholder; `pnpm run lint` and `pnpm run build` passing.
-- WP-02: Supabase schema — 26 tables across 6 migration files applied to live project `iqoelotzvdcjifajfuto`; `vector(3072)` for Gemini embeddings; RLS deferred; full TypeScript types auto-generated from live schema; lint and build passing.
-- WP-03: Auth foundation — `@supabase/ssr` server/admin clients, `src/proxy.ts` route protection, login page (email+password Server Action), logout route, `user_profiles` RLS + auto-create trigger (migration 007 applied via MCP), dashboard profile display; lint and build passing.
+- WP-00 through WP-03 as previously recorded (app shell, live schema, auth, `user_profiles` RLS + trigger).
+- **WP-04:** Client list/create/detail; matter list; matter create under client; matter layout + overview with posture/jurisdiction/status/workflow; `workflow_states` initialized on matter create (`W2` / `not_started` / next action); dashboard recent matters; server modules under `src/server/`; `created_by` scoping for non-admin with admin override; audit events `client_created`, `matter_created`, `workflow_state_initialized`; **RLS MVP policies** on `clients`, `matters`, `workflow_states`, `audit_events` (migration `20260512000001_wp04_clients_matters_workflow_audit_rls.sql`, applied to live project via MCP). `pnpm run lint` and `pnpm run build` pass. Manual browser smoke: create client → create matter → overview shows workflow.
 
 ## Work packets
 
-- **Active work packet:** WP-03 — Auth and User Profile Foundation (`ready_for_review`).
-- **Next:** WP-04 — Client/Matter/Intake Core — per `docs/implementation/05 Work Packet Register.md`.
+- **Active work packet:** WP-04 — Client / Matter / Workflow Foundation (`ready_for_review`).
+- **Next:** WP-05 — W0-lite Intake Foundation — per `docs/implementation/05 Work Packet Register.md`.
 
 ## Blockers
 
-- **Credentials:** Operator must populate `.env.local` with `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` before running locally. Never commit `.env.local`.
-- **RLS — 25 remaining tables:** Only `user_profiles` has RLS enabled. All other tables remain open to authenticated queries. Safe during MVP dev (no real legal data, private network). **Must be resolved in WP-04+ before production use or any external access. Tracked blocker.**
-- **`supabase link`:** CLI link requires Supabase PAT. IPv4 direct connection not available (project is IPv6-only). Migrations applied via MCP. Types generated via MCP.
-- **Manual auth verification:** Cannot be performed without a live `.env.local` and a test Supabase auth user. Operator should run the checklist (see AGENT_HANDOFF.md) after configuring credentials.
+- **Credentials:** `.env.local` remains local-only; never commit.
+- **RLS — remaining tables:** MVP RLS now covers **`clients`**, **`matters`**, **`workflow_states`**, and **`audit_events`** (owner + admin via `user_profiles.role`). **All other legal-domain tables** (evidence, assertions, stories, etc.) remain **without row policies** until a dedicated RLS packet. **Do not treat as production-grade isolation**; matter-team ABAC is not implemented yet.
+- **Matter + workflow + audits:** Not a single DB transaction from the app; mutations use **best-effort rollback** (delete workflow then matter if audit insert fails after row creation). Residual orphan risk is low but non-zero; document if adding concurrent writers.
+- **`supabase link` / CLI:** PAT and IPv6 issues may persist; migrations can be applied via Supabase MCP when needed.
 
 ## Environment status
 
@@ -54,26 +52,22 @@ Last updated: 2026-05-11 (WP-03 auth and user profile foundation complete)
 ## Supabase status
 
 - **Project:** `iqoelotzvdcjifajfuto` — `ACTIVE_HEALTHY`, region `ap-southeast-1`, Postgres 17.6.
-- 7 migrations applied (6 WP-02 schema + 1 WP-03 RLS/trigger). 26 tables live.
-- `user_profiles` RLS enabled. `handle_new_auth_user` trigger live.
-- `src/types/database.ts` auto-generated from live schema (WP-02). No regeneration required for WP-03 (trigger/policy only, no new columns).
-- Demo seed in `supabase/seed/demo_seed.sql` — NOT yet applied. Run manually after creating a dev auth user.
+- **Migrations:** WP-02 (6) + WP-03 (1) + **WP-04 RLS (1)** on live DB (`apply_migration` MCP for WP-04 RLS file).
+- `src/types/database.ts` — regenerate after future DDL (`supabase gen types typescript …` or MCP).
+- Demo seed file unchanged; optional for local testing.
 
 ## App status
 
-- Auth flow complete: `/login` → Server Action → session cookie → `/dashboard` → `user_profiles` display + logout.
-- Route protection active via `src/proxy.ts` (Next.js 16 proxy convention).
-- No business logic, no W4 ingestion, no agents.
+- Auth + profile (WP-03) unchanged.
+- **Clients / matters:** CRUD foundation live; matter tabs beyond overview remain placeholders (no W4, no W0 intake, no agents).
 
 ## Known risks
 
-- **RLS on 25 tables is off** — do not expose to a public network without WP-04 policies.
-- Embedding dimension `vector(3072)` targets Gemini default; change before first embedding write if using a different provider.
-- Demo seed not applied — run manually after creating a dev auth user.
-- New users default to role `operator`; admin must manually update roles via service-role server code.
+- RLS on evidence, stories, assertions, etc. is **still absent** — same network-exposure rules as before for those tables.
+- Admin detection in RLS uses **`user_profiles.role = 'admin'`** subquery; keep profile roles accurate.
+- Embedding dimension `vector(3072)` unchanged; revisit before first embedding write if provider changes.
 
 ## Next recommended step
 
-1. Accept WP-03; set register status to `done`.
-2. Configure `.env.local` and run manual auth verification checklist (see AGENT_HANDOFF.md).
-3. Start **WP-04 — Client/Matter/Intake Core** on `dev/cursor-intake`.
+1. Review WP-04; merge `dev/cursor-client-matter` when satisfied; set WP-04 to `done` in register.
+2. Start **WP-05 — W0-lite Intake Foundation** on `dev/cursor-w0-intake` if intake is next priority.

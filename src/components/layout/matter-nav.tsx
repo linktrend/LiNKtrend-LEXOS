@@ -16,14 +16,15 @@ const matterSections = [
 
 type MatterNavProps = {
   matterId: string;
+  matterTitle?: string | null;
 };
 
-export function MatterNav({ matterId }: MatterNavProps) {
+export function MatterNav({ matterId, matterTitle }: MatterNavProps) {
   const base = `/matters/${matterId}`;
   return (
     <nav
       className="mb-6 flex flex-wrap gap-1 border-b border-zinc-200 pb-3 dark:border-zinc-800"
-      aria-label="Matter sections"
+      aria-label={matterTitle ? `Matter sections for ${matterTitle}` : "Matter sections"}
     >
       {matterSections.map(({ segment, label }) => (
         <Link

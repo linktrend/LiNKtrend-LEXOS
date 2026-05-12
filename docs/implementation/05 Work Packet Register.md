@@ -634,7 +634,7 @@ Stop if Supabase Auth credentials are unavailable.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
@@ -668,6 +668,7 @@ src/features/matters/
 src/features/workflow/
 src/lib/
 src/server/
+supabase/migrations/
 ```
 
 ## Tasks
