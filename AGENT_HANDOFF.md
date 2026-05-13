@@ -6,7 +6,15 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-15 — W9 Adversarial Review Foundation** — Implemented on `dev/cursor-w9-adversarial`. Key deliverables:
+**Pre-WP-16 cleanup (2026-05-13)** — Readiness before WP-16 (no WP-16 product implementation):
+
+- **`docs/implementation/MIGRATION_HISTORY_NOTES.md`** — Repo vs live Supabase migration names; MCP-only WP-12 hotfix rows; WP-07 filename drift; warning not to duplicate DDL.
+- **Migrations:** `supabase/migrations/20260520120000_wp16_output_artifacts_rls.sql`, `20260520120100_wp16_risks_rls.sql` — RLS + SELECT/INSERT/UPDATE (matter owner / client creator / admin; `risks` supports client-only rows); **no DELETE**; no anon policies.
+- **Live apply:** Supabase MCP `apply_migration` **`wp16_output_artifacts_rls`** and **`wp16_risks_rls`** on project `iqoelotzvdcjifajfuto` (same SQL as repo files).
+- **`PROJECT_STATE.md`** — Phase 12 / branch `development`; active WP-16 per register on **`dev/cursor-risk-workflow-audit`** (distinct from WP-22 branch `dev/cursor-revised-output`); pre-WP-16 verification + cleanup noted; RLS blockers updated for `output_artifacts`/`risks`.
+- **Verification:** `pnpm run lint`, `pnpm run build` (E2E not re-run in this cleanup pass).
+
+**WP-15 — W9 Adversarial Review Foundation** — Implemented on `dev/cursor-w9-adversarial` (merged to `development`). Key deliverables:
 
 - **Routes / nav:** [`/matters/[matterId]/adversarial`](src/app/matters/[matterId]/adversarial/page.tsx), [`/matters/[matterId]/adversarial/[adversarialCritiqueId]`](src/app/matters/[matterId]/adversarial/[adversarialCritiqueId]/page.tsx); MatterNav **Adversarial** unchanged; **ArgumentW9Placeholder** links to adversarial list.
 - **Server:** [`src/server/adversarial/queries.ts`](src/server/adversarial/queries.ts), [`mutations.ts`](src/server/adversarial/mutations.ts), [`summary.ts`](src/server/adversarial/summary.ts) (`getAdversarialWorkspaceSummary` = argument workspace summary + non-archived argument draft options); [`advanceWorkflowToW9AfterFirstAdversarialCritique`](src/server/workflow/mutations.ts) (strict **W8→W9** on first `adversarial_critiques` insert when matter at W8; `W9_NEXT_ACTION` constant); loop-decision optional `workflow_states.next_action` sync + audit `adversarial_loop_decision_recorded`.
@@ -16,11 +24,11 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 - **Register:** **WP-15** = W9 (full packet); former **WP-21** stub superseded; **WP-22** = W11 Revised Output (renumbered from old WP-15).
 - **E2E:** [`e2e/wp15-adversarial-critique.spec.ts`](e2e/wp15-adversarial-critique.spec.ts) — creates argument draft first, then adversarial; conditional skip when RLS denies `adversarial_critiques` insert.
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 7 passed, 1 skipped (WP-15 until `adversarial_critiques` RLS on E2E Supabase project).
+Verification (WP-15 era): `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 7 passed, 1 skipped when `adversarial_critiques` RLS absent on E2E DB (pre-cleanup live may now be 8/8; see `PROJECT_STATE`).
 
 **Manual smoke (operator):** login → matter with W8 argument draft → **Adversarial** → create critique → editor saves matrix / loop decision / severity → issue panels still show gaps → output route still placeholder; optional: confirm workflow **W8→W9** after first critique when matter was in W8.
 
-Next: operator merge WP-15; apply `wp15_adversarial_critiques_rls` to remote DB; schedule **WP-16** or **WP-22**.
+Next: start **WP-16** on `dev/cursor-risk-workflow-audit` per register; **WP-22** revised output uses `dev/cursor-revised-output` when scheduled.
 
 ---
 
@@ -28,6 +36,7 @@ Next: operator merge WP-15; apply `wp15_adversarial_critiques_rls` to remote DB;
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|-------------|---------|
+| 2026-05-13 | Cursor | Pre-WP-16 cleanup | `MIGRATION_HISTORY_NOTES.md`; `output_artifacts` + `risks` RLS migrations (repo + MCP apply on `iqoelotzvdcjifajfuto`); PROJECT_STATE refresh (WP-16 vs WP-22 branch clarity); lint+build; no WP-16 UI. |
 | 2026-05-13 | Cursor | WP-15 | W9 adversarial list/detail, server CRUD + summary + workflow W8→W9 on first critique, RLS migration, argument W9 link + output placeholder, audits + Playwright wp15 (after argument draft); lint+build+E2E; PROJECT_STATE + register + handoff. |
 | 2026-05-13 | Cursor | WP-14 | W8 argument list/detail, server CRUD + summary + workflow W7→W8 on first draft, RLS migration, research W8 link + W9 placeholder, audits + Playwright wp14; strategy `argument` workflow hint; register WP-14/WP-21 reconciliation; lint+build+E2E; PROJECT_STATE + register + handoff. |
 | 2026-05-12 | Cursor | WP-13 | W7 research memo list/detail, server CRUD + summary + workflow W6→W7 on first memo, RLS migration (repo + MCP on live), strategy W7 link, audits + issue status audits, Playwright wp13; lint+build+E2E; PROJECT_STATE + register `ready_for_review` + handoff. |
