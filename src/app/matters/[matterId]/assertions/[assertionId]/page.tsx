@@ -36,6 +36,12 @@ export default async function MatterAssertionDetailPage({ params }: PageProps) {
       >
         ← Assertions list
       </Link>
+      <Link
+        href={`/matters/${matterId}/support?assertionId=${encodeURIComponent(assertionId)}`}
+        className="block text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+      >
+        Support links for this assertion →
+      </Link>
       <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Assertion</h1>
       <p className="text-xs text-zinc-500">
         ID <span className="font-mono">{row.id}</span> · Updated {new Date(row.updated_at).toLocaleString()}

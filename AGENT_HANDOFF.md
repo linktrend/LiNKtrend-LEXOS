@@ -6,18 +6,18 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-10 — W2 Case Story and Assertions** — Implemented on `dev/cursor-w2-story`. Key deliverables:
+**WP-11 — W5 Support Matrix Foundation** — Implemented on `dev/cursor-w5-support`. Key deliverables:
 
-- **Routes:** [`/matters/[matterId]/story`](src/app/matters/[matterId]/story/page.tsx), [`/matters/[matterId]/assertions`](src/app/matters/[matterId]/assertions/page.tsx), [`/matters/[matterId]/assertions/[assertionId]`](src/app/matters/[matterId]/assertions/[assertionId]/page.tsx).
-- **Server:** [`src/server/story/queries.ts`](src/server/story/queries.ts), [`mutations.ts`](src/server/story/mutations.ts), [`excerpt.ts`](src/server/story/excerpt.ts); [`src/server/assertions/queries.ts`](src/server/assertions/queries.ts), [`mutations.ts`](src/server/assertions/mutations.ts); [`src/server/workflow/mutations.ts`](src/server/workflow/mutations.ts) (`next_action` → “Review assertions and proceed to support mapping” after meaningful story length or assertion create).
-- **UI:** [`CaseStoryEditor`](src/features/story/CaseStoryEditor.tsx), [`CaseStoryWarnings`](src/features/story/CaseStoryWarnings.tsx); assertions table, create form, edit+archive, banners, [`SupportMatrixPlaceholder`](src/features/assertions/SupportMatrixPlaceholder.tsx). Manual assertions only; optional prefill from first story paragraph (deterministic). Archive = `use_status` superseded + `metadata.archived`; no hard delete; no `evidence_ids` writes.
-- **RLS:** [`20260515100000_wp10_case_stories_assertions_rls.sql`](supabase/migrations/20260515100000_wp10_case_stories_assertions_rls.sql) — matter `created_by` **or** client `created_by` **or** admin (fixes E2E matters where `matters.created_by` may not drive access alone). Live: Supabase MCP **`apply_migration`** `wp10_case_stories_assertions_rls`.
-- **Audits:** `case_story_created` / `case_story_updated`; `assertion_created` / `assertion_updated` / `assertion_archived` (metadata: ids + lengths only, no full body).
-- **E2E:** [`e2e/wp10-story-assertions.spec.ts`](e2e/wp10-story-assertions.spec.ts).
+- **Route / nav:** [`/matters/[matterId]/support`](src/app/matters/[matterId]/support/page.tsx); [`MatterNav`](src/components/layout/matter-nav.tsx) **Support** segment.
+- **Server:** [`src/server/support/queries.ts`](src/server/support/queries.ts), [`mutations.ts`](src/server/support/mutations.ts), [`validation.ts`](src/server/support/validation.ts), [`rollup.ts`](src/server/support/rollup.ts), [`metadata.ts`](src/server/support/metadata.ts); [`listExtractionsForMatter`](src/server/evidence/queries.ts), [`getExtractionByIdForMatterEvidence`](src/server/evidence/queries.ts); [`advanceWorkflowToW5AfterFirstSupportItem`](src/server/workflow/mutations.ts) (W2→W5 on first active link; `matters.current_workflow` + `workflow_states`; `next_action` = **Review support gaps and decide W6 strategy readiness**).
+- **UI:** [`SupportMatrixWorkspace`](src/features/support/SupportMatrixWorkspace.tsx) — create/edit/archive links, panels (unsupported, contradicted/risk, materiality snapshot, follow-up chips), W6 placeholder, QA copy on linked extractions; placeholders on assertions/evidence link to Support.
+- **RLS:** [`20260516100000_wp11_support_matrix_items_rls.sql`](supabase/migrations/20260516100000_wp11_support_matrix_items_rls.sql) (mirror WP-10 matter/client creator + admin; no DELETE). **Live:** Supabase MCP **`apply_migration`** `wp11_support_matrix_items_rls` (required for inserts; E2E failed until applied).
+- **Audits:** `support_matrix_item_created` / `updated` / `archived`; `assertion_support_status_updated` when rollup changes `support_state` (metadata: ids, enums, counts — no full bodies).
+- **E2E:** [`e2e/wp11-support-matrix.spec.ts`](e2e/wp11-support-matrix.spec.ts).
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 3 tests passed.
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 4 tests passed.
 
-Next: operator merge WP-10; register WP-10 → `done` when merged; WP-11 Support Matrix when scheduled.
+Next: operator merge WP-11; register WP-11 → `done` when merged; WP-12 when scheduled.
 
 ---
 
@@ -25,7 +25,7 @@ Next: operator merge WP-10; register WP-10 → `done` when merged; WP-11 Support
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
-| 2026-05-13 | Cursor | WP-10 | W2 story + assertions UI, server mutations, workflow next_action, audits, RLS migration (client creator fallback), MCP apply on live; E2e wp10 spec; lint+build+E2E green; PROJECT_STATE + register `ready_for_review` + handoff. |
+| 2026-05-12 | Cursor | WP-11 | W5 support matrix workspace, server mutations + rollup + workflow W5 transition, RLS migration (MCP on live), audits, MatterNav + placeholders + assertion detail link; E2E wp11; lint+build+E2E green; PROJECT_STATE + register `ready_for_review` + handoff. |
 | 2026-05-14 | Cursor | WP-08 | Deterministic extraction QA comparator, run-qa server path, QA tab + server action, audit events, E2E upload→extract→QA; lint+build+E2E green; PROJECT_STATE + register `ready_for_review`. |
 | 2026-05-14 | Cursor | WP-07 | W4-lite extraction runner, parser adapters, evidence detail UI + server action, `evidence_extractions` RLS + follow-up join policies (MCP applied live), E2E extraction path + Playwright CI webServer fix; lint + build + E2E green; PROJECT_STATE + register → `ready_for_review`. |
 | 2026-05-12 | Cursor | E2E / WP-06 | Fixed Playwright login + WP-06: moved `EVIDENCE_UPLOAD_INITIAL` out of `actions.ts` (invalid `use server` export); `next.config.ts` `allowedDevOrigins: ['127.0.0.1']`; optional `e2e/global-setup.ts` (`LEXOS_E2E_BOOTSTRAP_AUTH=1`); WP-06 spec + `data-testid` upload errors; `pnpm test:e2e` + lint + build green. |

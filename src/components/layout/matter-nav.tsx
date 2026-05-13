@@ -5,6 +5,7 @@ const matterSections = [
   { segment: "story", label: "Story" },
   { segment: "evidence", label: "Evidence" },
   { segment: "assertions", label: "Assertions" },
+  { segment: "support", label: "Support" },
   { segment: "strategy", label: "Strategy" },
   { segment: "research", label: "Research" },
   { segment: "argument", label: "Argument" },

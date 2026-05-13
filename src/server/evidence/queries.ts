@@ -55,6 +55,41 @@ export async function listExtractionsForEvidence(
   return data as EvidenceExtractionRow[];
 }
 
+/** All extractions for a matter (for W5 selectors; filter client-side by evidence_id). */
+export async function listExtractionsForMatter(
+  supabase: SupabaseClient<Database>,
+  matterId: string
+): Promise<EvidenceExtractionRow[]> {
+  if (!isValidUuid(matterId)) return [];
+
+  const { data, error } = await supabase
+    .from("evidence_extractions")
+    .select("*")
+    .eq("matter_id", matterId)
+    .order("created_at", { ascending: false });
+  if (error || !data) return [];
+  return data as EvidenceExtractionRow[];
+}
+
+export async function getExtractionByIdForMatterEvidence(
+  supabase: SupabaseClient<Database>,
+  matterId: string,
+  evidenceId: string,
+  extractionId: string
+): Promise<EvidenceExtractionRow | null> {
+  if (!isValidUuid(matterId) || !isValidUuid(evidenceId) || !isValidUuid(extractionId)) return null;
+
+  const { data, error } = await supabase
+    .from("evidence_extractions")
+    .select("*")
+    .eq("id", extractionId)
+    .eq("matter_id", matterId)
+    .eq("evidence_id", evidenceId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return data as EvidenceExtractionRow;
+}
+
 export async function getCurrentExtractionForEvidence(
   supabase: SupabaseClient<Database>,
   matterId: string,

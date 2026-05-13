@@ -1141,19 +1141,19 @@ Stop if matter CRUD is missing.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
-Codex or Cursor
+Cursor
 
 ## Branch
 
-`dev/codex-support-matrix`
+`dev/cursor-w5-support`
 
 ## Objective
 
-Implement assertion-to-evidence support matrix.
+Implement W5 Support Matrix foundation: matter-scoped support links (assertion → evidence, optional extraction), per-link support status, conservative assertion `support_state` rollup (no auto `truth_state`), soft archive (no hard delete), extraction QA visibility, workflow transition W2→W5 when the first active item exists, RLS on `support_matrix_items`, audits, workspace at `/matters/[matterId]/support`. No W6–W9, no agents, no embeddings.
 
 ## Source Documents to Read
 
@@ -1161,36 +1161,55 @@ Implement assertion-to-evidence support matrix.
 docs/implementation/03 Agent Prompt Registry v0.md
 docs/implementation/04 MVP Acceptance Test Plan.md
 docs/implementation/01 Database Schema v0.md
+docs/implementation/02 W4-lite Enhanced Ingestion Build Spec.md
 ```
 
 ## Files / Folders Allowed
 
 ```text
 src/app/matters/[matterId]/assertions/
-src/features/support-matrix/
-src/server/support-matrix/
+src/app/matters/[matterId]/support/
+src/app/matters/[matterId]/workflow/
+src/features/support/
+src/features/assertions/
+src/features/evidence/
+src/server/support/
 src/server/assertions/
+src/server/evidence/
+src/server/audit/
+src/server/workflow/
+src/components/
+src/types/
+supabase/migrations/
+e2e/
+tests/fixtures/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks
 
-1. Support Matrix table.
-2. Link assertion to evidence/extraction.
-3. Assign support state.
-4. Show unsupported assertions.
-5. Show contradicted assertions.
-6. Show extraction quality caveats.
+1. RLS on `support_matrix_items` (matter/client creator + admin; no DELETE policy).
+2. Server queries/mutations with same-matter validation; archive via `metadata.archived`.
+3. Support Matrix workspace UI (`/matters/[matterId]/support`), MatterNav link.
+4. Rollup `assertions.support_state` from active links; QA cap; optional auto `contradiction_flag` when contradicted link exists (never auto-clear).
+5. Workflow: first active item → `current_workflow` W2→W5, `next_action` per packet plan.
+6. Audits: `support_matrix_item_*`, `assertion_support_status_updated`.
+7. E2E (`e2e/wp11-support-matrix.spec.ts`) when credentials stable; placeholders wired to Support route.
 
 ## Acceptance Criteria
 
-* supported assertions require evidence/extraction link;
-* unsupported facts visible;
-* failed/QA-flagged extraction cannot silently support assertion;
-* evidence gaps visible.
+* supported assertions require evidence (and optional extraction) link; same-matter validation server-side;
+* unsupported facts visible; contradicted links visible; gaps/follow-up indicators visible;
+* failed/QA-flagged extraction cannot silently imply full support (rollup cap + UI warnings);
+* no hard delete; no auto `truth_state = verified`; no W6 implementation (placeholder only).
 
 ## Tests Required
 
-Manual support matrix test.
+* `pnpm run lint`
+* `pnpm run build`
+* `CI=true pnpm test:e2e` (includes `e2e/wp11-support-matrix.spec.ts` when env available)
+* manual support matrix walkthrough (see WP-11 implementation plan / AGENT_HANDOFF)
 
 ## Stop Conditions
 

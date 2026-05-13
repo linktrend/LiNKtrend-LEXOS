@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/assertions; Playwright +3 specs)
+Last updated: 2026-05-12 (WP-11 W5 support matrix; RLS on support_matrix_items; Playwright +4 specs)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/
 
 ## Phase and branch
 
-- **Current phase:** Phase 6 — Case story and assertions (W2 spine; W5 support matrix next)
-- **Current branch:** `dev/cursor-w2-story` (WP-10 implementation)
+- **Current phase:** Phase 7 — W5 Support Matrix foundation (W6 strategy next)
+- **Current branch:** `dev/cursor-w5-support` (WP-11 implementation)
 
 ## Documentation structure
 
@@ -23,7 +23,7 @@ Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/
 | `.cursor/rules/` | LEXOS agent and architecture rules for Cursor. |
 | `.cursor/skills/` | Project-scoped skills for Cursor. |
 | `src/app/` | Next.js App Router routes and layouts (LEXOS UI). |
-| `supabase/migrations/` | Postgres migrations (WP-02 … WP-10 **`case_stories` / `assertions` RLS**). |
+| `supabase/migrations/` | Postgres migrations (WP-02 … WP-11 **`support_matrix_items` RLS**). |
 | `supabase/seed/` | Demo seed data (fake only). |
 
 ## Completed setup work
@@ -37,19 +37,21 @@ Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/
 - **WP-08:** Deterministic extraction QA (`src/lib/extraction/qa/types.ts`, `comparator.ts`; `src/server/extraction/run-qa.ts`): structural checks, merged `quality_flags`, `extraction_quality_status` (`failed` / `qa_flagged` / `human_review_required` / narrow **`accepted`** for `text_document` + `local_utf8` without parser-risk flags); `metadata.last_qa` audit trail on extraction row; parent `evidence` processing/quality updates; audits `evidence_extraction_qa_started` / `evidence_extraction_qa_completed` / `evidence_extraction_qa_failed`; **`runExtractionQaAction`** + QA tab in Evidence Detail. No embeddings, no W5, no LLM/visual comparator. **`CI=true pnpm test:e2e`** green (includes upload → extract → QA).
 - **WP-09:** Evidence workspace UI on `dev/cursor-ui-evidence`: `src/components/evidence/*` (status badges, stacked warning banners, W5 assertions placeholder); evidence list columns (processing, extraction, extraction quality from batched current-extraction query, matter quality, review); richer empty state + `#evidence-upload`; detail merges **Quality & QA** tab (preserves `quality-flags-panel`, `qa-status-line`, `qa-flags-panel`, `run-extraction-qa`); original vs derivative copy; `listCurrentExtractionSummariesForMatter` in `src/server/evidence/queries.ts`. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`** green.
 
-- **WP-10:** W2 case story + assertions on `dev/cursor-w2-story`: matter routes **`/matters/[matterId]/story`** and **`/matters/[matterId]/assertions`** (+ detail **`/assertions/[assertionId]`**); `src/server/story/*`, `src/server/assertions/*`, `src/server/workflow/mutations.ts` (W2 milestone `next_action`); manual assertion CRUD, archive via `use_status` + `metadata.archived` (no hard delete); audits `case_story_*`, `assertion_*`; deterministic “prefill from story” excerpt only (no LLM); W5 **Support matrix** placeholder; migration **`20260515100000_wp10_case_stories_assertions_rls.sql`** (RLS: matter `created_by` **or** client `created_by` **or** admin). Live project: applied via Supabase MCP **`apply_migration`** `wp10_case_stories_assertions_rls`. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`** green (includes **`e2e/wp10-story-assertions.spec.ts`**).
+- **WP-10:** W2 case story + assertions on `dev/cursor-w2-story`: matter routes **`/matters/[matterId]/story`** and **`/matters/[matterId]/assertions`** (+ detail **`/assertions/[assertionId]`**); `src/server/story/*`, `src/server/assertions/*`, `src/server/workflow/mutations.ts` (W2 milestone `next_action`); manual assertion CRUD, archive via `use_status` + `metadata.archived` (no hard delete); audits `case_story_*`, `assertion_*`; deterministic “prefill from story” excerpt only (no LLM); migration **`20260515100000_wp10_case_stories_assertions_rls.sql`** (RLS: matter `created_by` **or** client `created_by` **or** admin). Live project: applied via Supabase MCP **`apply_migration`** `wp10_case_stories_assertions_rls`. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`** green (includes **`e2e/wp10-story-assertions.spec.ts`**).
+
+- **WP-11:** W5 Support Matrix on `dev/cursor-w5-support`: route **`/matters/[matterId]/support`**; `src/server/support/*` (queries, mutations, validation, rollup), `src/server/workflow/mutations.ts` (first active link → **`current_workflow` W2→W5** on `workflow_states` + **`matters`**, **`next_action`** `Review support gaps and decide W6 strategy readiness`); assertion **`support_state`** rollup from active links (QA cap; **`truth_state`** never auto-verified); **`contradiction_flag`** set true when any active contradicted link (never auto-cleared false); soft archive via `metadata.archived` (no hard delete); audits `support_matrix_item_*`, `assertion_support_status_updated`; migration **`20260516100000_wp11_support_matrix_items_rls.sql`**. Live project: applied via Supabase MCP **`apply_migration`** `wp11_support_matrix_items_rls`. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`** green (includes **`e2e/wp11-support-matrix.spec.ts`**).
 
 ## Work packets
 
-- **Active work packet:** WP-10 — W2 Case Story and Assertions (`ready_for_review` on branch `dev/cursor-w2-story`).
-- **Next:** Operator review/merge WP-10; set WP-10 `done` when merged; WP-11 W5 Support Matrix when scheduled.
+- **Active work packet:** WP-11 — W5 Support Matrix Foundation (`ready_for_review` on branch `dev/cursor-w5-support`).
+- **Next:** Operator review/merge WP-11; set WP-11 `done` when merged; WP-12 Strategy/Research when scheduled.
 
 ## Blockers
 
 - **Credentials:** `.env.local` remains local-only; never commit.
 - **WP-06 migration on live DB:** Applied via Supabase MCP **`apply_migration`** `wp06_evidence_storage_and_rls` (2026-05-13). Re-apply from repo file if drift.
 - **WP-07 RLS on live DB:** Initial `evidence_extractions` RLS plus follow-up **`wp07_evidence_extractions_rls_via_evidence`** applied via MCP (2026-05-14). Other environments: run migrations from repo in order.
-- **RLS — remaining tables:** MVP RLS includes **`sources`**, **`evidence`**, **`evidence_extractions`**, **`case_stories`**, and **`assertions`** (WP-06–10). Other spine tables may still lack policies. **Not production-grade ABAC**; creator/admin matter model only.
+- **RLS — remaining tables:** MVP RLS includes **`sources`**, **`evidence`**, **`evidence_extractions`**, **`case_stories`**, **`assertions`**, and **`support_matrix_items`** (WP-06–11). Other spine tables may still lack policies. **Not production-grade ABAC**; creator/admin matter model only.
 - **Matter + workflow + audits:** Not a single DB transaction from the app; evidence upload uses **best-effort rollback** (delete row + remove storage object + skip audit if a step fails after partial progress).
 - **`supabase link` / CLI:** PAT and IPv6 issues may persist; migrations can be applied via Supabase MCP when needed.
 
@@ -62,7 +64,7 @@ Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/
 ## Supabase status
 
 - **Project:** `iqoelotzvdcjifajfuto` — `ACTIVE_HEALTHY`, region `ap-southeast-1`, Postgres 17.6.
-- **Migrations:** Repo includes WP-02 (6) + WP-03 (1) + WP-04 RLS + WP-04 hardening + WP-05 intake RLS + **WP-06 evidence storage + RLS** (`20260513120000_wp06_evidence_storage_and_rls.sql`) + **WP-07 evidence_extractions RLS** (`20260513130000_wp07_evidence_extractions_rls.sql`, `20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`) + **WP-10 case_stories/assertions RLS** (`20260515100000_wp10_case_stories_assertions_rls.sql`). **Live DB:** WP-06 + WP-07 follow-up + **WP-10 story/assertion RLS** applied on project `iqoelotzvdcjifajfuto` (see handoff).
+- **Migrations:** Repo includes WP-02 (6) + WP-03 (1) + WP-04 RLS + WP-04 hardening + WP-05 intake RLS + **WP-06 evidence storage + RLS** (`20260513120000_wp06_evidence_storage_and_rls.sql`) + **WP-07 evidence_extractions RLS** (`20260513130000_wp07_evidence_extractions_rls.sql`, `20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`) + **WP-10 case_stories/assertions RLS** (`20260515100000_wp10_case_stories_assertions_rls.sql`) + **WP-11 support_matrix_items RLS** (`20260516100000_wp11_support_matrix_items_rls.sql`). **Live DB:** WP-06 + WP-07 follow-up + WP-10 + **WP-11 support matrix RLS** applied on project `iqoelotzvdcjifajfuto` (see handoff).
 - `src/types/database.ts` — unchanged by WP-06 (no new public tables/RPC); regenerate after future DDL.
 - Demo seed file unchanged; optional for local testing.
 
@@ -70,9 +72,10 @@ Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/
 
 - Auth + profile (WP-03) unchanged.
 - **Clients / matters / intake:** As in WP-04 / WP-05.
-- **Evidence (WP-06–09):** Matter **Evidence** tab: list with processing / extraction / current extraction quality / review badges; upload (`#evidence-upload`); detail with status strip, stacked contextual banners, tabs (Original, Markdown, JSON, **Quality & QA**), **Run extraction** and **Run QA** (in Quality & QA), signed original download, static **Linked assertions (W5)** placeholder. Local text extraction for `.txt`/`.md`; optional layout parser; placeholder `metadata_only` when unsupported. Deterministic QA updates extraction quality + flags; narrow machine **`accepted`** for local UTF-8 text path only. No embeddings; no full semantic/visual QA.
-- **Story / assertions (WP-10):** Matter **Story** tab: case story editor (markdown), narrative warnings, save + version bump, audits. **Assertions** tab: table (unsupported and archived remain visible; optional hide archived), create + detail/edit + archive; materiality and next support action in `metadata`; W5 support-matrix placeholder only. No `evidence_ids` population; no LLM extraction.
-- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts`, `e2e/wp06-evidence-upload.spec.ts`, and **`e2e/wp10-story-assertions.spec.ts`**. Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `pnpm test:e2e` — all green.
+- **Evidence (WP-06–09):** Matter **Evidence** tab: list with processing / extraction / current extraction quality / review badges; upload (`#evidence-upload`); detail with status strip, stacked contextual banners, tabs (Original, Markdown, JSON, **Quality & QA**), **Run extraction** and **Run QA** (in Quality & QA), signed original download, **Linked assertions (W5)** link card to Support workspace. Local text extraction for `.txt`/`.md`; optional layout parser; placeholder `metadata_only` when unsupported. Deterministic QA updates extraction quality + flags; narrow machine **`accepted`** for local UTF-8 text path only. No embeddings; no full semantic/visual QA.
+- **Story / assertions (WP-10):** Matter **Story** tab: case story editor (markdown), narrative warnings, save + version bump, audits. **Assertions** tab: table (unsupported and archived remain visible; optional hide archived), create + detail/edit + archive; materiality and next support action in `metadata`; links to **Support** workspace for W5 mapping.
+- **Support matrix (WP-11):** Matter **Support** tab: create/edit/archive support links (assertion → evidence, optional extraction), per-link status and risk, QA warnings for linked extractions, unsupported/contradicted/material panels, W6 placeholder only; assertion `support_state` rollup; workflow may advance to **W5** after first active link.
+- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts`, `e2e/wp06-evidence-upload.spec.ts`, **`e2e/wp10-story-assertions.spec.ts`**, and **`e2e/wp11-support-matrix.spec.ts`**. Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `pnpm test:e2e` — all green.
 
 ## Known risks
 
@@ -85,6 +88,6 @@ Last updated: 2026-05-13 (WP-10 W2 case story + assertions; RLS on case_stories/
 
 ## Next recommended step
 
-1. Operator review WP-10 on `dev/cursor-w2-story`; merge to `development` when satisfied; set WP-10 to `done` in the work packet register.
-2. Other environments: apply migration `20260515100000_wp10_case_stories_assertions_rls.sql` if not yet applied (RLS for `case_stories` and `assertions`).
-3. Proceed to WP-11 W5 Support Matrix when scheduled.
+1. Operator review WP-11 on `dev/cursor-w5-support`; merge to `development` when satisfied; set WP-11 to `done` in the work packet register.
+2. Other environments: apply migration `20260516100000_wp11_support_matrix_items_rls.sql` if not yet applied (RLS for `support_matrix_items`).
+3. Proceed to WP-12 W6 Strategy / W7 Research when scheduled.

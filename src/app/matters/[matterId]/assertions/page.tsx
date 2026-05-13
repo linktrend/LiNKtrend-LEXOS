@@ -37,8 +37,11 @@ export default async function MatterAssertionsPage({ params }: PageProps) {
       <div>
         <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Assertions</h2>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Atomic claims for this matter. Formal evidence support mapping is{" "}
-          <span className="font-medium">not</span> available until W5.
+          Atomic claims for this matter. Formal evidence support mapping lives in the{" "}
+          <Link href={`/matters/${matterId}/support`} className="font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+            Support
+          </Link>{" "}
+          workspace (W5).
         </p>
         <p className="mt-2 text-xs text-zinc-500">
           Need the narrative first?{" "}

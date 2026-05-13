@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export function SupportMatrixPlaceholder({ matterId }: { matterId: string }) {
   return (
     <section
@@ -6,18 +8,16 @@ export function SupportMatrixPlaceholder({ matterId }: { matterId: string }) {
     >
       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Support matrix (W5)</h2>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Linking assertions to evidence and extractions is deferred to WP-11. Status fields on assertions describe
-        narrative intent only until support mapping exists.
+        Map assertions to evidence and optional extractions in the Support workspace. Rollup updates assertion support
+        state from active links; truth state stays operator-controlled.
       </p>
       <p className="mt-2 font-mono text-xs text-zinc-500">Matter {matterId}</p>
-      <button
-        type="button"
-        disabled
-        className="mt-3 cursor-not-allowed rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500"
-        aria-disabled="true"
+      <Link
+        href={`/matters/${matterId}/support`}
+        className="mt-3 inline-flex rounded-md border border-indigo-600 bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500"
       >
-        Open support matrix (not available)
-      </button>
+        Open support matrix
+      </Link>
     </section>
   );
 }

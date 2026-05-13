@@ -1,9 +1,11 @@
+import Link from "next/link";
+
 type Props = {
   matterId: string;
 };
 
 /**
- * W5 / assertions are out of scope for this packet — static placeholder only.
+ * W5 support matrix — link to matter Support workspace (WP-11).
  */
 export function EvidenceAssertionsPlaceholder({ matterId }: Props) {
   return (
@@ -13,18 +15,16 @@ export function EvidenceAssertionsPlaceholder({ matterId }: Props) {
     >
       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Linked assertions (W5)</h2>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Assertions and the support matrix are not available in this work packet. Evidence and extraction objects remain
-        the source of record; W5 will link assertions to evidence when implemented.
+        Original evidence remains the anchor; extractions are derivative. Create support links in the Support workspace
+        to record how evidence relates to assertions.
       </p>
       <p className="mt-2 font-mono text-xs text-zinc-500">Matter {matterId}</p>
-      <button
-        type="button"
-        disabled
-        className="mt-3 cursor-not-allowed rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-400 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-500"
-        aria-disabled="true"
+      <Link
+        href={`/matters/${matterId}/support`}
+        className="mt-3 inline-flex rounded-md border border-indigo-600 bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500"
       >
-        Open support matrix (not available)
-      </button>
+        Open support matrix
+      </Link>
     </section>
   );
 }
