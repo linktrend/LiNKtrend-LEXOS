@@ -1217,23 +1217,23 @@ Stop if assertions or evidence tables are missing.
 
 ---
 
-# WP-12 — W6 Strategy and W7 Research
+# WP-12 — W6 Strategy Memo (W7 deferred)
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
-Cursor or Codex
+Cursor
 
 ## Branch
 
-`dev/cursor-strategy-research`
+`dev/cursor-w6-strategy`
 
 ## Objective
 
-Implement simplified Strategy and Research memo workflows.
+Matter-scoped W6 Strategy Memo CRUD (manual, no LLM): `strategy_memos` with structured `strategy_points`, read-only input summary from story/assertions/support matrix, RLS, audits, workflow W5→W6 on first memo insert. **W7 Research** (`research_memos`, research workspace) is **not in this packet** — only a UI placeholder on Strategy.
 
 ## Source Documents to Read
 
@@ -1246,36 +1246,53 @@ docs/implementation/04 MVP Acceptance Test Plan.md
 
 ```text
 src/app/matters/[matterId]/strategy/
-src/app/matters/[matterId]/research/
 src/features/strategy/
-src/features/research/
 src/server/strategy/
-src/server/research/
+src/server/support/          (read-only queries only; no behavioral change except imports if needed)
+src/server/assertions/      (read-only queries only)
+src/server/story/           (read-only queries only)
+src/server/workflow/
+src/server/audit/
+src/features/support/       (W6 card link to Strategy only)
+src/components/
+src/types/
+supabase/migrations/
+e2e/
+tests/fixtures/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks
 
-1. Strategy Memo create/view.
-2. Strategy Points.
-3. Research Questions.
-4. Research Memo create/view.
-5. Source/authority list.
-6. Limitations field.
+1. RLS on `strategy_memos` (select/insert/update; no DELETE policy).
+2. Server queries/mutations, optional deterministic summary aggregator, audits (`strategy_memo_created` / `updated` / `archived`).
+3. Workflow helper: first memo insert → if `current_workflow === 'W5'`, set W6 + `next_action` per WP-12 plan (strict W5→W6 only).
+4. Strategy list + detail routes, workspace UI (banners, template fields, input summary, gaps/contradictions/unsupported panels, W7 placeholder).
+5. Support matrix W6 card links to `/matters/[matterId]/strategy`.
+6. Optional E2E `e2e/wp12-strategy-memo.spec.ts`; `pnpm lint`, `pnpm build`, `CI=true pnpm test:e2e` when env available.
 
 ## Acceptance Criteria
 
-* strategy references support matrix;
-* research states jurisdiction;
-* verification status visible;
-* limitations visible.
+* Matter-scoped strategy memo create/edit; archive via `status` + metadata (no hard delete).
+* `strategy_points` template + `content_markdown`; `research_questions` JSON used only as planning bullets (not W7 tables).
+* Read-only summary references story, assertions, support matrix; surfaces zero-link matrix and QA-flagged extraction links where derivable.
+* RLS enforced; audits without full memo body in metadata.
+* First strategy memo for matter advances workflow W5→W6 when applicable.
 
 ## Tests Required
 
-Manual strategy/research test.
+`pnpm run lint`, `pnpm run build`, optional Playwright `e2e/wp12-strategy-memo.spec.ts`, manual Strategy walkthrough.
 
 ## Stop Conditions
 
-Stop if W5 support matrix is missing.
+Stop if W5 support matrix or assertions infrastructure is missing.
+
+---
+
+## WP-12b — W7 Research (follow-on, not started here)
+
+Research memos, jurisdiction/authority lists, and W7 routes remain **out of scope** for WP-12; track as separate work packet or register row when scheduled.
 
 ---
 

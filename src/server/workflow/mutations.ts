@@ -71,3 +71,40 @@ export async function advanceWorkflowToW5AfterFirstSupportItem(
 
   await supabase.from("workflow_states").update(patch).eq("id", wf.id);
 }
+
+const W6_NEXT_ACTION = "Review strategy and identify research or argument drafting needs";
+
+/**
+ * After the first strategy memo is created for a matter: if workflow is still W5, advance to W6.
+ * Strict W5→W6 only (does not jump from W2). Idempotent when already W6+.
+ */
+export async function advanceWorkflowToW6AfterFirstStrategyMemo(
+  supabase: SupabaseClient<Database>,
+  matterId: string
+): Promise<void> {
+  if (!isValidUuid(matterId)) return;
+
+  const { data: wf, error } = await supabase
+    .from("workflow_states")
+    .select("id, workflow_status, current_workflow")
+    .eq("matter_id", matterId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !wf) return;
+
+  if (wf.current_workflow !== "W5") return;
+
+  const patch: Database["public"]["Tables"]["workflow_states"]["Update"] = {
+    current_workflow: "W6",
+    next_action: W6_NEXT_ACTION,
+  };
+
+  if (wf.workflow_status === "not_started") {
+    patch.workflow_status = "in_progress";
+  }
+
+  await supabase.from("matters").update({ current_workflow: "W6" }).eq("id", matterId);
+  await supabase.from("workflow_states").update(patch).eq("id", wf.id);
+}

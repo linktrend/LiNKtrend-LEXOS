@@ -223,19 +223,18 @@ export function SupportMatrixWorkspace({
         </ul>
       </section>
 
-      <section className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900/40">
-        <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Strategy (W6)</h3>
+      <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Strategy (W6)</h3>
         <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-          Strategy workspace is not implemented in this packet. Use the Support Matrix to prepare evidence mapping
-          first.
+          Draft internal strategy memos from your support mapping and assertions. This is not a filing or client-ready
+          advice.
         </p>
-        <button
-          type="button"
-          disabled
-          className="mt-3 cursor-not-allowed rounded-md bg-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-600"
+        <Link
+          href={`/matters/${matterId}/strategy`}
+          className="mt-3 inline-flex rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-500"
         >
-          Open strategy (disabled)
-        </button>
+          Open strategy workspace
+        </Link>
       </section>
 
       <section className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
