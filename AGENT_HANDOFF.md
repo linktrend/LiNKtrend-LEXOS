@@ -6,19 +6,20 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-13 — W7 Research Foundation** — Implemented on `dev/cursor-w7-research`. Key deliverables:
+**WP-14 — W8 Argument Draft Foundation** — Implemented on `dev/cursor-w8-argument`. Key deliverables:
 
-- **Routes / nav:** [`/matters/[matterId]/research`](src/app/matters/[matterId]/research/page.tsx), [`/matters/[matterId]/research/[researchMemoId]`](src/app/matters/[matterId]/research/[researchMemoId]/page.tsx); MatterNav **Research** unchanged; Strategy **W7** placeholder now links to Research.
-- **Server:** [`src/server/research/queries.ts`](src/server/research/queries.ts), [`mutations.ts`](src/server/research/mutations.ts), [`summary.ts`](src/server/research/summary.ts) (extends strategy workspace summary + strategy memo list); [`advanceWorkflowToW7AfterFirstResearchMemo`](src/server/workflow/mutations.ts) (strict **W6→W7** on first research memo insert for matter; `next_action` = **Review research findings and prepare argument drafting readiness**).
-- **UI:** [`src/features/research/*`](src/features/research/) — banners, input summary (with `workflowAdvanceHint="research"` on [`StrategyInputSummaryPanel`](src/features/strategy/strategy-input-summary.tsx)), memo workspace (template sections + narrative + authorities JSON + operator workflow status in metadata), client issue editor (JSON payload), W8 placeholder; reuses [`StrategyIssuePanels`](src/features/strategy/strategy-issue-panels.tsx) for unsupported/contradictions/gaps.
-- **RLS:** [`20260518100000_wp13_research_memos_rls.sql`](supabase/migrations/20260518100000_wp13_research_memos_rls.sql) — mirror WP-12; **no DELETE**; live project: Supabase MCP **`wp13_research_memos_rls`** applied.
-- **Audits:** `research_memo_created` / `research_memo_updated` / `research_memo_archived` / `research_issue_status_updated` (metadata only — no full memo body).
-- **Register:** WP-13 is W7 Research; former W8 Argument row preserved as **WP-13b** stub.
-- **E2E:** [`e2e/wp13-research-memo.spec.ts`](e2e/wp13-research-memo.spec.ts) — conditional skip when RLS denies insert (same pattern as WP-12).
+- **Routes / nav:** [`/matters/[matterId]/argument`](src/app/matters/[matterId]/argument/page.tsx), [`/matters/[matterId]/argument/[argumentDraftId]`](src/app/matters/[matterId]/argument/[argumentDraftId]/page.tsx); MatterNav **Argument** unchanged.
+- **Server:** [`src/server/argument/queries.ts`](src/server/argument/queries.ts), [`mutations.ts`](src/server/argument/mutations.ts), [`summary.ts`](src/server/argument/summary.ts) (`getArgumentWorkspaceSummary` = research/strategy summary + research memo list + open research issues); [`advanceWorkflowToW8AfterFirstArgumentDraft`](src/server/workflow/mutations.ts) (strict **W7→W8** on first `argument_drafts` insert; `next_action` = **Review argument draft and prepare adversarial analysis**).
+- **UI:** [`src/features/argument/*`](src/features/argument/) — banners, input summary (reuse research/strategy panels + research lists/issues), memo-style workspace (10 structured sections + markdown), W9 placeholder only; [`ResearchW8Placeholder`](src/features/research/research-w8-placeholder.tsx) now links to Argument with `matterId`.
+- **RLS:** [`20260519100000_wp14_argument_drafts_rls.sql`](supabase/migrations/20260519100000_wp14_argument_drafts_rls.sql) — mirror WP-13; **no DELETE**; apply to live DB for non-skipped E2E.
+- **Audits:** `argument_draft_created` / `argument_draft_updated` / `argument_draft_archived` (metadata only — no full draft body).
+- **Register:** **WP-14** = W8 (full packet); **WP-13b** superseded pointer; former W9 **WP-14** row moved to **WP-21 — W9 Adversarial Review**; **WP-13** marked `done`; **WP-15** stop condition references WP-21.
+- **Strategy input hint:** [`workflowAdvanceHint="argument"`](src/features/strategy/strategy-input-summary.tsx) for W7→W8 expectation copy on argument pages.
+- **E2E:** [`e2e/wp14-argument-draft.spec.ts`](e2e/wp14-argument-draft.spec.ts) — conditional skip when RLS denies insert.
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 5 passed, 1 skipped (WP-12 strategy memo RLS path on E2E DB).
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 6 passed, 1 skipped (WP-14 until `argument_drafts` RLS on E2E Supabase project).
 
-Next: operator merge WP-13; register WP-13 → `done` when merged; WP-13b W8 when scheduled.
+Next: operator merge WP-14; apply `wp14_argument_drafts_rls` to remote DB; schedule **WP-21** (W9).
 
 ---
 
@@ -26,6 +27,7 @@ Next: operator merge WP-13; register WP-13 → `done` when merged; WP-13b W8 whe
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|-------------|---------|
+| 2026-05-13 | Cursor | WP-14 | W8 argument list/detail, server CRUD + summary + workflow W7→W8 on first draft, RLS migration, research W8 link + W9 placeholder, audits + Playwright wp14; strategy `argument` workflow hint; register WP-14/WP-21 reconciliation; lint+build+E2E; PROJECT_STATE + register + handoff. |
 | 2026-05-12 | Cursor | WP-13 | W7 research memo list/detail, server CRUD + summary + workflow W6→W7 on first memo, RLS migration (repo + MCP on live), strategy W7 link, audits + issue status audits, Playwright wp13; lint+build+E2E; PROJECT_STATE + register `ready_for_review` + handoff. |
 | 2026-05-14 | Cursor | WP-08 | Deterministic extraction QA comparator, run-qa server path, QA tab + server action, audit events, E2E upload→extract→QA; lint+build+E2E green; PROJECT_STATE + register `ready_for_review`. |
 | 2026-05-14 | Cursor | WP-07 | W4-lite extraction runner, parser adapters, evidence detail UI + server action, `evidence_extractions` RLS + follow-up join policies (MCP applied live), E2E extraction path + Playwright CI webServer fix; lint + build + E2E green; PROJECT_STATE + register → `ready_for_review`. |

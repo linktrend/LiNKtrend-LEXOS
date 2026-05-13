@@ -5,13 +5,16 @@ import { StrategyInputSummaryPanel } from "@/features/strategy/strategy-input-su
 export function ResearchInputSummaryPanel({
   matterId,
   summary,
+  workflowAdvanceHint = "research",
 }: {
   matterId: string;
   summary: ResearchWorkspaceSummary;
+  /** W7 research pages: W6→W7 hint. Argument (W8) pages: W7→W8 hint. */
+  workflowAdvanceHint?: "research" | "argument";
 }) {
   return (
     <div className="space-y-4">
-      <StrategyInputSummaryPanel matterId={matterId} summary={summary} workflowAdvanceHint="research" />
+      <StrategyInputSummaryPanel matterId={matterId} summary={summary} workflowAdvanceHint={workflowAdvanceHint} />
       <div className="border-t border-zinc-200 pt-4 text-sm dark:border-zinc-800">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           Strategy memos (read-only)

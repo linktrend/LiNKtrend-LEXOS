@@ -1300,7 +1300,7 @@ W7 research memos and routes are implemented in **WP-13** (`dev/cursor-w7-resear
 
 ## Status
 
-`ready_for_review`
+`done`
 
 ## Owner Tool
 
@@ -1365,29 +1365,37 @@ Stop if strategy/support infrastructure or matter bundle access patterns are mis
 
 ---
 
-# WP-13b — W8 Argument Draft (stub; not started)
+# WP-13b — W8 Argument Draft (superseded)
 
-Former WP-13 scope retained for scheduling. **Do not implement in WP-13.**
+**Superseded by WP-14 — W8 Argument Draft Foundation.** Retained as a historical stub pointer only.
+
+---
+
+# WP-14 — W8 Argument Draft Foundation
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
-Cursor or Codex
+Cursor
 
 ## Branch
 
-`dev/cursor-argument` (TBD)
+`dev/cursor-w8-argument`
 
 ## Objective
 
-Implement Argument Draft workflow.
+Implement the W8 Argument Draft foundation for the LEXOS MVP: operator-driven structured argument drafts in `argument_drafts`, matter-scoped UI at `/matters/[matterId]/argument`, read-only integration from case story, assertions, support matrix, strategy memos, and research memos; visibility of unsupported assertions, contradictions, QA concerns, and unresolved research issues; archive/supersede via status (no hard delete); RLS; audits; workflow **W7→W8** on first argument draft. **No W9 implementation** (placeholder only). No autonomous LLM/API calls; no court-ready filing output.
 
 ## Source Documents to Read
 
 ```text
+PROJECT_STATE.md
+AGENT_HANDOFF.md
+docs/implementation/00 MVP Implementation Roadmap.md
+docs/implementation/01 Database Schema v0.md
 docs/implementation/03 Agent Prompt Registry v0.md
 docs/implementation/04 MVP Acceptance Test Plan.md
 ```
@@ -1397,37 +1405,61 @@ docs/implementation/04 MVP Acceptance Test Plan.md
 ```text
 src/app/matters/[matterId]/argument/
 src/features/argument/
+src/features/research/
+src/features/strategy/
+src/features/support/
+src/features/assertions/
 src/server/argument/
+src/server/research/
+src/server/strategy/
+src/server/support/
+src/server/assertions/
+src/server/audit/
+src/server/workflow/
+src/components/
+src/types/
+supabase/migrations/*_wp14_argument_drafts_rls.sql
+e2e/wp14-argument-draft.spec.ts
+tests/fixtures/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
+docs/implementation/05 Work Packet Register.md
+```
+
+## Files / Folders Prohibited
+
+```text
+docs/lexos-system-spec/
+docs/source-briefings/
 ```
 
 ## Tasks
 
-1. Generate/create Argument Draft.
-2. Show intended audience.
-3. Show evidence/source basis.
-4. Show unsupported/weak claims.
-5. Set artifact status to draft.
-6. Route to W9.
+1. `argument_drafts` RLS (SELECT/INSERT/UPDATE; no DELETE).
+2. Server: list/create/update/archive argument drafts; matter bundle checks; `advanceWorkflowToW8AfterFirstArgumentDraft` on first insert when workflow is W7; structured sections in `metadata.argument_sections`.
+3. UI: argument list + detail editor; internal-not-filing-ready banners; read-only summary/issue panels; W9 placeholder only.
+4. Audits: `argument_draft_created`, `argument_draft_updated`, `argument_draft_archived` (metadata only — no full draft body).
+5. E2E spec for happy path / conditional skip on RLS denial.
 
 ## Acceptance Criteria
 
-* draft created;
-* status is draft;
-* unsupported claims panel visible;
-* W9 route exists;
-* no filing-ready status.
+* Authenticated users with matter access can create/edit/view/archive argument drafts; no hard delete.
+* RLS prevents cross-matter access; no DELETE policy on `argument_drafts`.
+* First argument draft for a matter advances **W7→W8** when applicable; `next_action` updated for adversarial prep (W9 not started automatically).
+* Unsupported assertions, contradictions, QA concerns, and unresolved research issues remain visible in panels.
+* W9 adversarial review is not implemented in this packet (placeholder acceptable).
 
 ## Tests Required
 
-Manual argument draft test.
+`pnpm run lint`, `pnpm run build`, `CI=true pnpm test:e2e` (including `e2e/wp14-argument-draft.spec.ts` when present); manual smoke on argument routes.
 
 ## Stop Conditions
 
-Stop if W6/W7 artifacts are missing.
+Stop if research/strategy/support infrastructure or matter bundle access patterns are missing.
 
 ---
 
-# WP-14 — W9 Adversarial Review
+# WP-21 — W9 Adversarial Review
 
 ## Status
 
@@ -1484,7 +1516,7 @@ Manual W9 critique test.
 
 ## Stop Conditions
 
-Stop if W8 draft is missing.
+Stop if W8 argument draft is missing.
 
 ---
 
@@ -1545,7 +1577,7 @@ Manual revised output test.
 
 ## Stop Conditions
 
-Stop if W9 critique is missing.
+Stop if WP-21 (W9 adversarial) critique is missing.
 
 ---
 

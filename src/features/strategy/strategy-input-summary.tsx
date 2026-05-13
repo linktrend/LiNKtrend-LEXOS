@@ -8,8 +8,8 @@ export function StrategyInputSummaryPanel({
 }: {
   matterId: string;
   summary: StrategyWorkspaceSummary;
-  /** W6 research packet: warn when matter is not in W6/W7 for automatic W7 advance. */
-  workflowAdvanceHint?: "strategy" | "research";
+  /** W6 research packet: warn when matter is not in W6/W7 for automatic W7 advance. W8: W7→W8 on first draft. */
+  workflowAdvanceHint?: "strategy" | "research" | "argument";
 }) {
   const states = Object.entries(summary.assertionCountBySupportState).sort(([a], [b]) => a.localeCompare(b));
   const unsupportedCount = summary.unsupportedAssertions.length;
@@ -22,6 +22,10 @@ export function StrategyInputSummaryPanel({
     summary.currentWorkflow &&
     summary.currentWorkflow !== "W6" &&
     summary.currentWorkflow !== "W7";
+  const showArgumentW8Hint =
+    summary.currentWorkflow &&
+    summary.currentWorkflow !== "W7" &&
+    summary.currentWorkflow !== "W8";
 
   return (
     <div className="space-y-4 text-sm">
@@ -35,6 +39,12 @@ export function StrategyInputSummaryPanel({
         <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100">
           Matter workflow is <span className="font-semibold">{summary.currentWorkflow}</span>. Advancing to W7
           happens automatically only when the first research memo is created while the matter is in W6.
+        </div>
+      ) : null}
+      {workflowAdvanceHint === "argument" && showArgumentW8Hint ? (
+        <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100">
+          Matter workflow is <span className="font-semibold">{summary.currentWorkflow}</span>. Advancing to W8
+          happens automatically only when the first argument draft is created while the matter is in W7.
         </div>
       ) : null}
 

@@ -145,3 +145,40 @@ export async function advanceWorkflowToW7AfterFirstResearchMemo(
   await supabase.from("matters").update({ current_workflow: "W7" }).eq("id", matterId);
   await supabase.from("workflow_states").update(patch).eq("id", wf.id);
 }
+
+const W8_NEXT_ACTION = "Review argument draft and prepare adversarial analysis";
+
+/**
+ * After the first argument draft is created for a matter: if workflow is still W7, advance to W8.
+ * Strict W7→W8 only. Idempotent when already W8+.
+ */
+export async function advanceWorkflowToW8AfterFirstArgumentDraft(
+  supabase: SupabaseClient<Database>,
+  matterId: string
+): Promise<void> {
+  if (!isValidUuid(matterId)) return;
+
+  const { data: wf, error } = await supabase
+    .from("workflow_states")
+    .select("id, workflow_status, current_workflow")
+    .eq("matter_id", matterId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !wf) return;
+
+  if (wf.current_workflow !== "W7") return;
+
+  const patch: Database["public"]["Tables"]["workflow_states"]["Update"] = {
+    current_workflow: "W8",
+    next_action: W8_NEXT_ACTION,
+  };
+
+  if (wf.workflow_status === "not_started") {
+    patch.workflow_status = "in_progress";
+  }
+
+  await supabase.from("matters").update({ current_workflow: "W8" }).eq("id", matterId);
+  await supabase.from("workflow_states").update(patch).eq("id", wf.id);
+}
