@@ -46,7 +46,7 @@ export default async function StrategyMemoDetailPage({ params }: PageProps) {
         <div className="lg:col-span-2 space-y-6">
           <StrategyMemoWorkspace matterId={matterId} memo={memo} />
           <StrategyIssuePanels matterId={matterId} summary={summary} />
-          <StrategyW7Placeholder />
+          <StrategyW7Placeholder matterId={matterId} />
         </div>
         <aside className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
           <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Input summary</h3>

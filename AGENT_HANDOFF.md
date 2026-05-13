@@ -6,26 +6,27 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-12 — W6 Strategy Memo Foundation** — Implemented on `dev/cursor-w6-strategy`. Key deliverables:
+**WP-13 — W7 Research Foundation** — Implemented on `dev/cursor-w7-research`. Key deliverables:
 
-- **Routes / nav:** [`/matters/[matterId]/strategy`](src/app/matters/[matterId]/strategy/page.tsx), [`/matters/[matterId]/strategy/[strategyMemoId]`](src/app/matters/[matterId]/strategy/[strategyMemoId]/page.tsx); MatterNav **Strategy** unchanged.
-- **Server:** [`src/server/strategy/queries.ts`](src/server/strategy/queries.ts), [`mutations.ts`](src/server/strategy/mutations.ts), [`summary.ts`](src/server/strategy/summary.ts); [`src/features/strategy/template-keys.ts`](src/features/strategy/template-keys.ts), [`template-json.ts`](src/features/strategy/template-json.ts); [`advanceWorkflowToW6AfterFirstStrategyMemo`](src/server/workflow/mutations.ts) (strict **W5→W6** on first memo insert for matter; `next_action` = **Review strategy and identify research or argument drafting needs**).
-- **UI:** Banners, input summary, unsupported/contradictions/gaps panels, W7 placeholder, [`StrategyMemoWorkspace`](src/features/strategy/strategy-memo-workspace.tsx), [`CreateStrategyMemoForm`](src/features/strategy/create-strategy-memo-form.tsx); [`SupportMatrixWorkspace`](src/features/support/SupportMatrixWorkspace.tsx) W6 card links to Strategy.
-- **RLS:** [`20260517100000_wp12_strategy_memos_rls.sql`](supabase/migrations/20260517100000_wp12_strategy_memos_rls.sql) — mirror WP-11 matter/client creator + admin; **no DELETE**; INSERT `WITH CHECK` uses disjunct EXISTS (matter owner OR client creator OR admin). **Apply to every Supabase project** backing `NEXT_PUBLIC_SUPABASE_URL` (E2E skips memo create if insert still hits RLS).
-- **Audits:** `strategy_memo_created` / `strategy_memo_updated` / `strategy_memo_archived` (metadata: ids, lengths, counts — no full memo body).
-- **E2E:** [`e2e/wp12-strategy-memo.spec.ts`](e2e/wp12-strategy-memo.spec.ts) — conditional skip when RLS denies insert.
+- **Routes / nav:** [`/matters/[matterId]/research`](src/app/matters/[matterId]/research/page.tsx), [`/matters/[matterId]/research/[researchMemoId]`](src/app/matters/[matterId]/research/[researchMemoId]/page.tsx); MatterNav **Research** unchanged; Strategy **W7** placeholder now links to Research.
+- **Server:** [`src/server/research/queries.ts`](src/server/research/queries.ts), [`mutations.ts`](src/server/research/mutations.ts), [`summary.ts`](src/server/research/summary.ts) (extends strategy workspace summary + strategy memo list); [`advanceWorkflowToW7AfterFirstResearchMemo`](src/server/workflow/mutations.ts) (strict **W6→W7** on first research memo insert for matter; `next_action` = **Review research findings and prepare argument drafting readiness**).
+- **UI:** [`src/features/research/*`](src/features/research/) — banners, input summary (with `workflowAdvanceHint="research"` on [`StrategyInputSummaryPanel`](src/features/strategy/strategy-input-summary.tsx)), memo workspace (template sections + narrative + authorities JSON + operator workflow status in metadata), client issue editor (JSON payload), W8 placeholder; reuses [`StrategyIssuePanels`](src/features/strategy/strategy-issue-panels.tsx) for unsupported/contradictions/gaps.
+- **RLS:** [`20260518100000_wp13_research_memos_rls.sql`](supabase/migrations/20260518100000_wp13_research_memos_rls.sql) — mirror WP-12; **no DELETE**; live project: Supabase MCP **`wp13_research_memos_rls`** applied.
+- **Audits:** `research_memo_created` / `research_memo_updated` / `research_memo_archived` / `research_issue_status_updated` (metadata only — no full memo body).
+- **Register:** WP-13 is W7 Research; former W8 Argument row preserved as **WP-13b** stub.
+- **E2E:** [`e2e/wp13-research-memo.spec.ts`](e2e/wp13-research-memo.spec.ts) — conditional skip when RLS denies insert (same pattern as WP-12).
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 4 passed, 1 skipped (WP-12 until `strategy_memos` RLS is applied on the E2E database).
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 5 passed, 1 skipped (WP-12 strategy memo RLS path on E2E DB).
 
-Next: operator merge WP-12; register WP-12 → `done` when merged; WP-12b W7 when scheduled.
+Next: operator merge WP-13; register WP-13 → `done` when merged; WP-13b W8 when scheduled.
 
 ---
 
 ## Handoff log
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
-|------------|--------------|---------------|---------|
-| 2026-05-12 | Cursor | WP-12 | W6 strategy memo list/detail, server CRUD + summary + workflow W5→W6 on first memo, RLS migration, Support→Strategy link, audits, Playwright wp12 (skip if RLS not on E2E DB); lint+build+E2E green; PROJECT_STATE + register `ready_for_review` + handoff. |
+|------------|--------------|-------------|---------|
+| 2026-05-12 | Cursor | WP-13 | W7 research memo list/detail, server CRUD + summary + workflow W6→W7 on first memo, RLS migration (repo + MCP on live), strategy W7 link, audits + issue status audits, Playwright wp13; lint+build+E2E; PROJECT_STATE + register `ready_for_review` + handoff. |
 | 2026-05-14 | Cursor | WP-08 | Deterministic extraction QA comparator, run-qa server path, QA tab + server action, audit events, E2E upload→extract→QA; lint+build+E2E green; PROJECT_STATE + register `ready_for_review`. |
 | 2026-05-14 | Cursor | WP-07 | W4-lite extraction runner, parser adapters, evidence detail UI + server action, `evidence_extractions` RLS + follow-up join policies (MCP applied live), E2E extraction path + Playwright CI webServer fix; lint + build + E2E green; PROJECT_STATE + register → `ready_for_review`. |
 | 2026-05-12 | Cursor | E2E / WP-06 | Fixed Playwright login + WP-06: moved `EVIDENCE_UPLOAD_INITIAL` out of `actions.ts` (invalid `use server` export); `next.config.ts` `allowedDevOrigins: ['127.0.0.1']`; optional `e2e/global-setup.ts` (`LEXOS_E2E_BOOTSTRAP_AUTH=1`); WP-06 spec + `data-testid` upload errors; `pnpm test:e2e` + lint + build green. |

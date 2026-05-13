@@ -4,9 +4,12 @@ import type { StrategyWorkspaceSummary } from "@/server/strategy/summary";
 export function StrategyInputSummaryPanel({
   matterId,
   summary,
+  workflowAdvanceHint = "strategy",
 }: {
   matterId: string;
   summary: StrategyWorkspaceSummary;
+  /** W6 research packet: warn when matter is not in W6/W7 for automatic W7 advance. */
+  workflowAdvanceHint?: "strategy" | "research";
 }) {
   const states = Object.entries(summary.assertionCountBySupportState).sort(([a], [b]) => a.localeCompare(b));
   const unsupportedCount = summary.unsupportedAssertions.length;
@@ -14,12 +17,24 @@ export function StrategyInputSummaryPanel({
     unsupportedCount >= 3 ||
     (summary.assertionTotal >= 4 && unsupportedCount >= Math.ceil(summary.assertionTotal * 0.4));
 
+  const showStrategyW6Hint = summary.currentWorkflow && summary.currentWorkflow !== "W5";
+  const showResearchW7Hint =
+    summary.currentWorkflow &&
+    summary.currentWorkflow !== "W6" &&
+    summary.currentWorkflow !== "W7";
+
   return (
     <div className="space-y-4 text-sm">
-      {summary.currentWorkflow && summary.currentWorkflow !== "W5" ? (
+      {workflowAdvanceHint === "strategy" && showStrategyW6Hint ? (
         <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100">
           Matter workflow is <span className="font-semibold">{summary.currentWorkflow}</span>. Advancing to W6
           happens automatically only when the first strategy memo is created while the matter is in W5.
+        </div>
+      ) : null}
+      {workflowAdvanceHint === "research" && showResearchW7Hint ? (
+        <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-100">
+          Matter workflow is <span className="font-semibold">{summary.currentWorkflow}</span>. Advancing to W7
+          happens automatically only when the first research memo is created while the matter is in W6.
         </div>
       ) : null}
 

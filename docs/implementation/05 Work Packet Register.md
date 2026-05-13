@@ -1290,13 +1290,84 @@ Stop if W5 support matrix or assertions infrastructure is missing.
 
 ---
 
-## WP-12b — W7 Research (follow-on, not started here)
+## WP-12b — W7 Research (superseded by WP-13)
 
-Research memos, jurisdiction/authority lists, and W7 routes remain **out of scope** for WP-12; track as separate work packet or register row when scheduled.
+W7 research memos and routes are implemented in **WP-13** (`dev/cursor-w7-research`). WP-12 delivered strategy only.
 
 ---
 
-# WP-13 — W8 Argument Draft
+# WP-13 — W7 Research Foundation
+
+## Status
+
+`ready_for_review`
+
+## Owner Tool
+
+Cursor
+
+## Branch
+
+`dev/cursor-w7-research`
+
+## Objective
+
+Matter-scoped W7 Research: manual `research_memos` CRUD, structured template and issue tracking in `metadata`, RLS (no DELETE), audits, workflow **W6→W7** on first research memo insert. No W8/W9 implementation, no agents, no external research pipelines.
+
+## Source Documents to Read
+
+```text
+docs/implementation/04 MVP Acceptance Test Plan.md
+docs/implementation/01 Database Schema v0.md
+```
+
+## Files / Folders Allowed
+
+```text
+src/app/matters/[matterId]/research/
+src/features/research/
+src/server/research/
+src/server/workflow/mutations.ts
+supabase/migrations/*_wp13_research_memos_rls.sql
+e2e/wp13-research-memo.spec.ts
+```
+
+## Files / Folders Prohibited
+
+```text
+docs/lexos-system-spec/
+docs/source-briefings/
+```
+
+## Tasks
+
+1. Add `research_memos` RLS (SELECT/INSERT/UPDATE; no DELETE) aligned with strategy/support access.
+2. Server: list/get/create/update/archive research memos; matter bundle checks; audits; `advanceWorkflowToW7AfterFirstResearchMemo` when first insert succeeds and workflow is W6.
+3. Store operator template sections and issues in `metadata` (`research_sections`, `research_issues`, optional `research_workflow_status`, `links`); keep `verification_status` at safe defaults unless product maps legal-review semantics later.
+4. UI: research list + detail editor; read-only input summary (assertions/support/story); issue panel; internal-only banners; W8 placeholder card only (no argument drafting).
+5. Strategy W7 placeholder links to `/matters/[matterId]/research`.
+
+## Acceptance Criteria
+
+* Authenticated users with matter access can create/edit/view research memos; archive/supersede without hard delete.
+* RLS prevents cross-matter access; no DELETE policy on `research_memos`.
+* First research memo for a matter advances **W6→W7** only when applicable; `next_action` set per workflow helper.
+* Unsupported assertions and QA concerns remain visible in panels (no hiding).
+* Audits for create/update/archive and for research issue status changes (metadata only, no full memo body in audits).
+
+## Tests Required
+
+`pnpm run lint`, `pnpm run build`, `CI=true pnpm test:e2e` (including `e2e/wp13-research-memo.spec.ts` when present); manual smoke on research routes.
+
+## Stop Conditions
+
+Stop if strategy/support infrastructure or matter bundle access patterns are missing.
+
+---
+
+# WP-13b — W8 Argument Draft (stub; not started)
+
+Former WP-13 scope retained for scheduling. **Do not implement in WP-13.**
 
 ## Status
 
@@ -1308,7 +1379,7 @@ Cursor or Codex
 
 ## Branch
 
-`dev/cursor-argument`
+`dev/cursor-argument` (TBD)
 
 ## Objective
 
