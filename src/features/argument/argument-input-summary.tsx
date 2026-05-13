@@ -5,13 +5,21 @@ import { ResearchInputSummaryPanel } from "@/features/research/research-input-su
 export function ArgumentInputSummaryPanel({
   matterId,
   summary,
+  workflowAdvanceHint = "argument",
+  argumentDraftOptions,
 }: {
   matterId: string;
   summary: ArgumentWorkspaceSummary;
+  workflowAdvanceHint?: "argument" | "adversarial";
+  argumentDraftOptions?: { id: string; title: string | null; status: string | null }[];
 }) {
   return (
     <div className="space-y-4">
-      <ResearchInputSummaryPanel matterId={matterId} summary={summary} workflowAdvanceHint="argument" />
+      <ResearchInputSummaryPanel
+        matterId={matterId}
+        summary={summary}
+        workflowAdvanceHint={workflowAdvanceHint}
+      />
       <div className="border-t border-zinc-200 pt-4 text-sm dark:border-zinc-800">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
           Research memos (read-only)
@@ -68,6 +76,34 @@ export function ArgumentInputSummaryPanel({
           </ul>
         )}
       </div>
+      {argumentDraftOptions && argumentDraftOptions.length > 0 ? (
+        <div className="border-t border-zinc-200 pt-4 text-sm dark:border-zinc-800">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Argument drafts (read-only)
+          </h3>
+          <ul className="mt-2 space-y-1 text-xs">
+            {argumentDraftOptions.map((d) => (
+              <li key={d.id}>
+                <Link
+                  href={`/matters/${matterId}/argument/${d.id}`}
+                  className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                >
+                  {(d.title ?? "Untitled").slice(0, 80)}
+                </Link>
+                <span className="text-zinc-500"> · {d.status}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2">
+            <Link
+              href={`/matters/${matterId}/argument`}
+              className="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+            >
+              All argument drafts
+            </Link>
+          </p>
+        </div>
+      ) : null}
     </div>
   );
 }

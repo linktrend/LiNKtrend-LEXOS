@@ -6,20 +6,21 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-14 — W8 Argument Draft Foundation** — Implemented on `dev/cursor-w8-argument`. Key deliverables:
+**WP-15 — W9 Adversarial Review Foundation** — Implemented on `dev/cursor-w9-adversarial`. Key deliverables:
 
-- **Routes / nav:** [`/matters/[matterId]/argument`](src/app/matters/[matterId]/argument/page.tsx), [`/matters/[matterId]/argument/[argumentDraftId]`](src/app/matters/[matterId]/argument/[argumentDraftId]/page.tsx); MatterNav **Argument** unchanged.
-- **Server:** [`src/server/argument/queries.ts`](src/server/argument/queries.ts), [`mutations.ts`](src/server/argument/mutations.ts), [`summary.ts`](src/server/argument/summary.ts) (`getArgumentWorkspaceSummary` = research/strategy summary + research memo list + open research issues); [`advanceWorkflowToW8AfterFirstArgumentDraft`](src/server/workflow/mutations.ts) (strict **W7→W8** on first `argument_drafts` insert; `next_action` = **Review argument draft and prepare adversarial analysis**).
-- **UI:** [`src/features/argument/*`](src/features/argument/) — banners, input summary (reuse research/strategy panels + research lists/issues), memo-style workspace (10 structured sections + markdown), W9 placeholder only; [`ResearchW8Placeholder`](src/features/research/research-w8-placeholder.tsx) now links to Argument with `matterId`.
-- **RLS:** [`20260519100000_wp14_argument_drafts_rls.sql`](supabase/migrations/20260519100000_wp14_argument_drafts_rls.sql) — mirror WP-13; **no DELETE**; apply to live DB for non-skipped E2E.
-- **Audits:** `argument_draft_created` / `argument_draft_updated` / `argument_draft_archived` (metadata only — no full draft body).
-- **Register:** **WP-14** = W8 (full packet); **WP-13b** superseded pointer; former W9 **WP-14** row moved to **WP-21 — W9 Adversarial Review**; **WP-13** marked `done`; **WP-15** stop condition references WP-21.
-- **Strategy input hint:** [`workflowAdvanceHint="argument"`](src/features/strategy/strategy-input-summary.tsx) for W7→W8 expectation copy on argument pages.
-- **E2E:** [`e2e/wp14-argument-draft.spec.ts`](e2e/wp14-argument-draft.spec.ts) — conditional skip when RLS denies insert.
+- **Routes / nav:** [`/matters/[matterId]/adversarial`](src/app/matters/[matterId]/adversarial/page.tsx), [`/matters/[matterId]/adversarial/[adversarialCritiqueId]`](src/app/matters/[matterId]/adversarial/[adversarialCritiqueId]/page.tsx); MatterNav **Adversarial** unchanged; **ArgumentW9Placeholder** links to adversarial list.
+- **Server:** [`src/server/adversarial/queries.ts`](src/server/adversarial/queries.ts), [`mutations.ts`](src/server/adversarial/mutations.ts), [`summary.ts`](src/server/adversarial/summary.ts) (`getAdversarialWorkspaceSummary` = argument workspace summary + non-archived argument draft options); [`advanceWorkflowToW9AfterFirstAdversarialCritique`](src/server/workflow/mutations.ts) (strict **W8→W9** on first `adversarial_critiques` insert when matter at W8; `W9_NEXT_ACTION` constant); loop-decision optional `workflow_states.next_action` sync + audit `adversarial_loop_decision_recorded`.
+- **UI:** [`src/features/adversarial/*`](src/features/adversarial/) — banners, create form, critique workspace (attack matrix + markdown + severity + loop decision + archive/supersede), output placeholder (WP-22); list/detail pages mirror argument/research patterns; **StrategyIssuePanels** + **ArgumentInputSummaryPanel** with `workflowAdvanceHint="adversarial"`.
+- **RLS:** [`20260520100000_wp15_adversarial_critiques_rls.sql`](supabase/migrations/20260520100000_wp15_adversarial_critiques_rls.sql) — mirror WP-14 spirit; **no DELETE**; apply to live DB for non-skipped WP-15 E2E.
+- **Audits:** `adversarial_critique_created` / `updated` / `archived` / `adversarial_loop_decision_recorded` (metadata only — no full critique body).
+- **Register:** **WP-15** = W9 (full packet); former **WP-21** stub superseded; **WP-22** = W11 Revised Output (renumbered from old WP-15).
+- **E2E:** [`e2e/wp15-adversarial-critique.spec.ts`](e2e/wp15-adversarial-critique.spec.ts) — creates argument draft first, then adversarial; conditional skip when RLS denies `adversarial_critiques` insert.
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 6 passed, 1 skipped (WP-14 until `argument_drafts` RLS on E2E Supabase project).
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 7 passed, 1 skipped (WP-15 until `adversarial_critiques` RLS on E2E Supabase project).
 
-Next: operator merge WP-14; apply `wp14_argument_drafts_rls` to remote DB; schedule **WP-21** (W9).
+**Manual smoke (operator):** login → matter with W8 argument draft → **Adversarial** → create critique → editor saves matrix / loop decision / severity → issue panels still show gaps → output route still placeholder; optional: confirm workflow **W8→W9** after first critique when matter was in W8.
+
+Next: operator merge WP-15; apply `wp15_adversarial_critiques_rls` to remote DB; schedule **WP-16** or **WP-22**.
 
 ---
 
@@ -27,6 +28,7 @@ Next: operator merge WP-14; apply `wp14_argument_drafts_rls` to remote DB; sched
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|-------------|---------|
+| 2026-05-13 | Cursor | WP-15 | W9 adversarial list/detail, server CRUD + summary + workflow W8→W9 on first critique, RLS migration, argument W9 link + output placeholder, audits + Playwright wp15 (after argument draft); lint+build+E2E; PROJECT_STATE + register + handoff. |
 | 2026-05-13 | Cursor | WP-14 | W8 argument list/detail, server CRUD + summary + workflow W7→W8 on first draft, RLS migration, research W8 link + W9 placeholder, audits + Playwright wp14; strategy `argument` workflow hint; register WP-14/WP-21 reconciliation; lint+build+E2E; PROJECT_STATE + register + handoff. |
 | 2026-05-12 | Cursor | WP-13 | W7 research memo list/detail, server CRUD + summary + workflow W6→W7 on first memo, RLS migration (repo + MCP on live), strategy W7 link, audits + issue status audits, Playwright wp13; lint+build+E2E; PROJECT_STATE + register `ready_for_review` + handoff. |
 | 2026-05-14 | Cursor | WP-08 | Deterministic extraction QA comparator, run-qa server path, QA tab + server action, audit events, E2E upload→extract→QA; lint+build+E2E green; PROJECT_STATE + register `ready_for_review`. |

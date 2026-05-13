@@ -1459,30 +1459,39 @@ Stop if research/strategy/support infrastructure or matter bundle access pattern
 
 ---
 
-# WP-21 — W9 Adversarial Review
+# WP-21 — W9 Adversarial Review (superseded)
+
+**Superseded by WP-15 — W9 Adversarial Review Foundation.**
+
+---
+
+# WP-15 — W9 Adversarial Review Foundation
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
-Codex or Cursor
+Cursor
 
 ## Branch
 
-`dev/codex-w9-adversarial`
+`dev/cursor-w9-adversarial`
 
 ## Objective
 
-Implement mandatory W9 adversarial critique workflow.
+Implement the W9 Adversarial Review foundation: operator-driven critiques in `adversarial_critiques`, linked to `argument_drafts`, matter-scoped UI at `/matters/[matterId]/adversarial`, structured `attack_matrix`, controlled `loop_decision`, severity visibility, read-only integration from argument/support/assertions/evidence QA/strategy/research; archive via status (no hard delete); RLS; audits; workflow **W8→W9** on first critique. No W11 revised output, no LLM/agents, no filing-ready output.
 
 ## Source Documents to Read
 
 ```text
+PROJECT_STATE.md
+AGENT_HANDOFF.md
+docs/implementation/00 MVP Implementation Roadmap.md
+docs/implementation/01 Database Schema v0.md
 docs/implementation/03 Agent Prompt Registry v0.md
 docs/implementation/04 MVP Acceptance Test Plan.md
-docs/lexos-system-spec/12 LEXOS Testing, Evaluation, and Quality Assurance Specification.md
 ```
 
 ## Files / Folders Allowed
@@ -1490,37 +1499,65 @@ docs/lexos-system-spec/12 LEXOS Testing, Evaluation, and Quality Assurance Speci
 ```text
 src/app/matters/[matterId]/adversarial/
 src/features/adversarial/
+src/features/argument/
+src/features/research/
+src/features/strategy/
+src/features/support/
+src/features/assertions/
 src/server/adversarial/
+src/server/argument/
+src/server/research/
+src/server/strategy/
+src/server/support/
+src/server/assertions/
+src/server/evidence/
+src/server/audit/
+src/server/workflow/
+src/components/
+src/types/
+supabase/migrations/*_wp15_adversarial_critiques_rls.sql
+e2e/wp15-adversarial-critique.spec.ts
+tests/fixtures/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
+docs/implementation/05 Work Packet Register.md
+```
+
+## Files / Folders Prohibited
+
+```text
+docs/lexos-system-spec/
+docs/source-briefings/
 ```
 
 ## Tasks
 
-1. Generate/create Adversarial Critique.
-2. Store Attack Matrix.
-3. Store loop decision.
-4. Show severity.
-5. Show blockers.
-6. Prevent silent skip to final output.
+1. `adversarial_critiques` RLS (SELECT/INSERT/UPDATE; no DELETE).
+2. Server: list/create/update/archive critiques; validate `argument_draft_id` belongs to matter; `advanceWorkflowToW9AfterFirstAdversarialCritique` on first insert when workflow is W8.
+3. UI: adversarial list + detail editor; attack matrix sections + narrative; severity + loop decision; read-only context panels; W11 output placeholder only.
+4. Audits: `adversarial_critique_created`, `adversarial_critique_updated`, `adversarial_critique_archived`, `adversarial_loop_decision_recorded` (metadata only — no full critique body).
+5. E2E spec with conditional skip on RLS denial.
 
 ## Acceptance Criteria
 
-* W9 critique exists;
-* Attack Matrix exists;
-* loop decision exists;
-* critique is visible before W11;
-* critical issues remain visible.
+* Authenticated users with matter access can create/edit/view/archive adversarial critiques; `argument_draft_id` required on create; no hard delete.
+* RLS prevents cross-matter access; no DELETE policy on `adversarial_critiques`.
+* First adversarial critique for a matter advances **W8→W9** when applicable; `next_action` updated for critique review.
+* Unsupported assertions, contradictions, QA concerns, and research gaps remain visible in panels.
+* Loop decision uses controlled vocabulary; audit when loop decision changes.
+* W11 revised output is not implemented in this packet.
 
 ## Tests Required
 
-Manual W9 critique test.
+`pnpm run lint`, `pnpm run build`, `CI=true pnpm test:e2e` (including `e2e/wp15-adversarial-critique.spec.ts` when present); manual smoke on adversarial routes.
 
 ## Stop Conditions
 
-Stop if W8 argument draft is missing.
+Stop if argument draft infrastructure or matter bundle access patterns are missing.
 
 ---
 
-# WP-15 — W11 Revised Output
+# WP-22 — W11 Revised Output
 
 ## Status
 
@@ -1577,7 +1614,7 @@ Manual revised output test.
 
 ## Stop Conditions
 
-Stop if WP-21 (W9 adversarial) critique is missing.
+Stop if WP-15 (W9 adversarial) critique is missing.
 
 ---
 

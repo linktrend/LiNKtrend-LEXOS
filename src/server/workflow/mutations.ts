@@ -182,3 +182,40 @@ export async function advanceWorkflowToW8AfterFirstArgumentDraft(
   await supabase.from("matters").update({ current_workflow: "W8" }).eq("id", matterId);
   await supabase.from("workflow_states").update(patch).eq("id", wf.id);
 }
+
+const W9_NEXT_ACTION = "Review adversarial critique and resolve required fixes";
+
+/**
+ * After the first adversarial critique is created for a matter: if workflow is still W8, advance to W9.
+ * Strict W8→W9 only. Idempotent when already W9+.
+ */
+export async function advanceWorkflowToW9AfterFirstAdversarialCritique(
+  supabase: SupabaseClient<Database>,
+  matterId: string
+): Promise<void> {
+  if (!isValidUuid(matterId)) return;
+
+  const { data: wf, error } = await supabase
+    .from("workflow_states")
+    .select("id, workflow_status, current_workflow")
+    .eq("matter_id", matterId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !wf) return;
+
+  if (wf.current_workflow !== "W8") return;
+
+  const patch: Database["public"]["Tables"]["workflow_states"]["Update"] = {
+    current_workflow: "W9",
+    next_action: W9_NEXT_ACTION,
+  };
+
+  if (wf.workflow_status === "not_started") {
+    patch.workflow_status = "in_progress";
+  }
+
+  await supabase.from("matters").update({ current_workflow: "W9" }).eq("id", matterId);
+  await supabase.from("workflow_states").update(patch).eq("id", wf.id);
+}

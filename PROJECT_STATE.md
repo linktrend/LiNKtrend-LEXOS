@@ -1,6 +1,6 @@
 # LEXOS — Project State
 
-Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; workflow W7→W8 on first draft; Playwright WP-14; register WP-21 for W9)
+Last updated: 2026-05-13 (WP-15 W9 adversarial critiques; RLS on adversarial_critiques; workflow W8→W9 on first critique; Playwright WP-15; register WP-15 / WP-22)
 
 ## Project
 
@@ -10,8 +10,8 @@ Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; work
 
 ## Phase and branch
 
-- **Current phase:** Phase 10 — W8 Argument draft foundation (W9 deferred to WP-21)
-- **Current branch:** `dev/cursor-w8-argument` (WP-14 implementation)
+- **Current phase:** Phase 11 — W9 Adversarial review foundation (W11 revised output = WP-22, not started)
+- **Current branch:** `dev/cursor-w9-adversarial` (WP-15 implementation)
 
 ## Documentation structure
 
@@ -23,7 +23,7 @@ Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; work
 | `.cursor/rules/` | LEXOS agent and architecture rules for Cursor. |
 | `.cursor/skills/` | Project-scoped skills for Cursor. |
 | `src/app/` | Next.js App Router routes and layouts (LEXOS UI). |
-| `supabase/migrations/` | Postgres migrations (WP-02 … WP-14 **`argument_drafts` RLS**). |
+| `supabase/migrations/` | Postgres migrations (WP-02 … WP-15 **`adversarial_critiques` RLS**). |
 | `supabase/seed/` | Demo seed data (fake only). |
 
 ## Completed setup work
@@ -43,19 +43,21 @@ Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; work
 
 - **WP-13:** W7 Research memos (merged to `development` from `dev/cursor-w7-research`): routes **`/matters/[matterId]/research`** …; migration **`20260518100000_wp13_research_memos_rls.sql`**; **`e2e/wp13-research-memo.spec.ts`**. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`** green (WP-12 may skip).
 
-- **WP-14:** W8 Argument drafts on `dev/cursor-w8-argument`: routes **`/matters/[matterId]/argument`** and **`/matters/[matterId]/argument/[argumentDraftId]`**; `src/server/argument/*`, `src/features/argument/*`, workflow **`advanceWorkflowToW8AfterFirstArgumentDraft`** (strict **W7→W8** on first `argument_drafts` insert; `next_action` = **Review argument draft and prepare adversarial analysis**); structured **`metadata.argument_sections`**; optional FK `strategy_memo_id` / `research_memo_id`; audits `argument_draft_created` / `argument_draft_updated` / `argument_draft_archived` (no full draft body); migration **`20260519100000_wp14_argument_drafts_rls.sql`** (RLS select/insert/update; **no DELETE**). Research pages link to Argument; **W9** placeholder only (**WP-21**). **`e2e/wp14-argument-draft.spec.ts`** skips on RLS denial until migration applied. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`**: 6 passed, 1 skipped when `argument_drafts` RLS absent on E2E DB.
+- **WP-14:** W8 Argument drafts on `dev/cursor-w8-argument`: routes **`/matters/[matterId]/argument`** and **`/matters/[matterId]/argument/[argumentDraftId]`**; `src/server/argument/*`, `src/features/argument/*`, workflow **`advanceWorkflowToW8AfterFirstArgumentDraft`** (strict **W7→W8** on first `argument_drafts` insert; `next_action` = **Review argument draft and prepare adversarial analysis**); structured **`metadata.argument_sections`**; optional FK `strategy_memo_id` / `research_memo_id`; audits `argument_draft_created` / `argument_draft_updated` / `argument_draft_archived` (no full draft body); migration **`20260519100000_wp14_argument_drafts_rls.sql`** (RLS select/insert/update; **no DELETE**). Research pages link to Argument; **W9** placeholder links to Adversarial (**WP-15**). **`e2e/wp14-argument-draft.spec.ts`** skips on RLS denial until migration applied. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`**: 6 passed, 1 skipped when `argument_drafts` RLS absent on E2E DB.
+
+- **WP-15:** W9 Adversarial critiques on `dev/cursor-w9-adversarial`: routes **`/matters/[matterId]/adversarial`** and **`/matters/[matterId]/adversarial/[adversarialCritiqueId]`**; `src/server/adversarial/*` (queries, mutations, `getAdversarialWorkspaceSummary`), Server Actions + `redirect()` on create; **`argument_draft_id` required** on create; structured **`attack_matrix`** + `loop_decision` (controlled strings) + `severity_summary`; operator-only (no LLM); workflow **`advanceWorkflowToW9AfterFirstAdversarialCritique`** (strict **W8→W9** on first `adversarial_critiques` insert when matter still at W8; `next_action` = **Review adversarial critique and resolve required fixes**); optional **`workflow_states.next_action`** nudge when loop decision changes; audits `adversarial_critique_created` / `updated` / `archived` / `adversarial_loop_decision_recorded` (metadata only — no full critique body); migration **`20260520100000_wp15_adversarial_critiques_rls.sql`** (RLS select/insert/update; **no DELETE**). Argument page **W9** panel links here; **W11** output placeholder only (**WP-22**). **`e2e/wp15-adversarial-critique.spec.ts`** (creates argument draft first) skips when `adversarial_critiques` insert hits RLS until migration applied. **`pnpm lint`**, **`pnpm build`**, **`CI=true pnpm test:e2e`**: 7 passed, 1 skipped (WP-15 until `adversarial_critiques` RLS on E2E DB).
 
 ## Work packets
 
-- **Active work packet:** WP-14 — W8 Argument Draft Foundation (`ready_for_review` on branch `dev/cursor-w8-argument`).
-- **Next:** Operator review/merge WP-14; apply **`20260519100000_wp14_argument_drafts_rls.sql`** to Supabase targets as needed; schedule **WP-21** W9 Adversarial Review.
+- **Active work packet:** WP-15 — W9 Adversarial Review Foundation (`ready_for_review` on branch `dev/cursor-w9-adversarial`).
+- **Next:** Operator review/merge WP-15; apply **`20260520100000_wp15_adversarial_critiques_rls.sql`** to Supabase targets as needed; schedule **WP-16** risk/workflow/audit panels or **WP-22** revised output when ready.
 
 ## Blockers
 
 - **Credentials:** `.env.local` remains local-only; never commit.
 - **WP-06 migration on live DB:** Applied via Supabase MCP **`apply_migration`** `wp06_evidence_storage_and_rls` (2026-05-13). Re-apply from repo file if drift.
 - **WP-07 RLS on live DB:** Initial `evidence_extractions` RLS plus follow-up **`wp07_evidence_extractions_rls_via_evidence`** applied via MCP (2026-05-14). Other environments: run migrations from repo in order.
-- **RLS — remaining tables:** MVP RLS includes **`sources`**, **`evidence`**, **`evidence_extractions`**, **`case_stories`**, **`assertions`**, **`support_matrix_items`**, **`strategy_memos`**, **`research_memos`**, and **`argument_drafts`** (WP-06–14). Other spine tables may still lack policies. **Not production-grade ABAC**; creator/admin matter model only.
+- **RLS — remaining tables:** MVP RLS includes **`sources`**, **`evidence`**, **`evidence_extractions`**, **`case_stories`**, **`assertions`**, **`support_matrix_items`**, **`strategy_memos`**, **`research_memos`**, **`argument_drafts`**, and **`adversarial_critiques`** (WP-06–15 migration in repo; apply **`wp15_adversarial_critiques_rls`** on each Supabase project). Other spine tables may still lack policies. **Not production-grade ABAC**; creator/admin matter model only.
 - **Matter + workflow + audits:** Not a single DB transaction from the app; evidence upload uses **best-effort rollback** (delete row + remove storage object + skip audit if a step fails after partial progress).
 - **`supabase link` / CLI:** PAT and IPv6 issues may persist; migrations can be applied via Supabase MCP when needed.
 
@@ -68,7 +70,7 @@ Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; work
 ## Supabase status
 
 - **Project:** `iqoelotzvdcjifajfuto` — `ACTIVE_HEALTHY`, region `ap-southeast-1`, Postgres 17.6.
-- **Migrations:** Repo includes WP-02 (6) + WP-03 (1) + WP-04 RLS + WP-04 hardening + WP-05 intake RLS + **WP-06 evidence storage + RLS** (`20260513120000_wp06_evidence_storage_and_rls.sql`) + **WP-07 evidence_extractions RLS** (`20260513130000_wp07_evidence_extractions_rls.sql`, `20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`) + **WP-10 case_stories/assertions RLS** (`20260515100000_wp10_case_stories_assertions_rls.sql`) + **WP-11 support_matrix_items RLS** (`20260516100000_wp11_support_matrix_items_rls.sql`) + **WP-12 strategy_memos RLS** (`20260517100000_wp12_strategy_memos_rls.sql`) + **WP-13 research_memos RLS** (`20260518100000_wp13_research_memos_rls.sql`) + **WP-14 argument_drafts RLS** (`20260519100000_wp14_argument_drafts_rls.sql`). **Live DB:** apply **`wp14_argument_drafts_rls`** when enabling argument CRUD for app users (mirror WP-13). Other environments: apply repo migration files in timestamp order.
+- **Migrations:** Repo includes WP-02 (6) + WP-03 (1) + WP-04 RLS + WP-04 hardening + WP-05 intake RLS + **WP-06 evidence storage + RLS** (`20260513120000_wp06_evidence_storage_and_rls.sql`) + **WP-07 evidence_extractions RLS** (`20260513130000_wp07_evidence_extractions_rls.sql`, `20260514100000_wp07_evidence_extractions_rls_via_evidence.sql`) + **WP-10 case_stories/assertions RLS** (`20260515100000_wp10_case_stories_assertions_rls.sql`) + **WP-11 support_matrix_items RLS** (`20260516100000_wp11_support_matrix_items_rls.sql`) + **WP-12 strategy_memos RLS** (`20260517100000_wp12_strategy_memos_rls.sql`) + **WP-13 research_memos RLS** (`20260518100000_wp13_research_memos_rls.sql`) + **WP-14 argument_drafts RLS** (`20260519100000_wp14_argument_drafts_rls.sql`) + **WP-15 adversarial_critiques RLS** (`20260520100000_wp15_adversarial_critiques_rls.sql`). **Live DB:** apply **`wp15_adversarial_critiques_rls`** when enabling adversarial CRUD (mirror WP-14). Other environments: apply repo migration files in timestamp order.
 - `src/types/database.ts` — unchanged by WP-06 (no new public tables/RPC); regenerate after future DDL.
 - Demo seed file unchanged; optional for local testing.
 
@@ -81,8 +83,9 @@ Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; work
 - **Support matrix (WP-11):** Matter **Support** tab: create/edit/archive support links (assertion → evidence, optional extraction), per-link status and risk, QA warnings for linked extractions, unsupported/contradicted/material panels; assertion `support_state` rollup; workflow may advance to **W5** after first active link; **W6** card links to **Strategy** workspace.
 - **Strategy (WP-12):** Matter **Strategy** tab: list memos, create draft (redirect to detail), edit template sections + markdown, archive/supersede, read-only input summary and issue panels; **W7 placeholder links to Research**. First memo for matter advances workflow **W5→W6** when applicable. No LLM.
 - **Research (WP-13):** Matter **Research** tab: **`/matters/[matterId]/research`** and **`/matters/[matterId]/research/[researchMemoId]`**; `src/server/research/*` (queries, mutations, summary), `src/features/research/*`, Server Actions + `redirect()` on create; structured **`metadata.research_sections`** + **`metadata.research_issues`** + optional **`metadata.research_workflow_status`**; operator **`verification_status`** left at **`not_reviewed`** by default; workflow **`advanceWorkflowToW7AfterFirstResearchMemo`** (strict **W6→W7** on first research memo for matter; `next_action` = **Review research findings and prepare argument drafting readiness**); audits `research_memo_created` / `updated` / `archived` / `research_issue_status_updated` (no full memo body); migration **`20260518100000_wp13_research_memos_rls.sql`** (RLS select/insert/update; **no DELETE**; INSERT disjunct like WP-12). **Live project `iqoelotzvdcjifajfuto`:** applied via Supabase MCP **`wp13_research_memos_rls`**. **Argument (W8)** card links to **`/matters/[matterId]/argument`** (WP-14).
-- **Argument (WP-14):** Matter **Argument** tab: list + create + detail editor; `metadata.argument_sections` + narrative markdown; optional links to strategy/research memos; read-only **ArgumentInputSummaryPanel** (story, assertions, support, strategy list, research list, open research issues); **StrategyIssuePanels**; **ArgumentW9Placeholder** (no W9 CRUD). First draft advances **W7→W8** when applicable. Operator-only; no LLM.
-- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts`, `e2e/wp06-evidence-upload.spec.ts`, **`e2e/wp10-story-assertions.spec.ts`**, **`e2e/wp11-support-matrix.spec.ts`**, **`e2e/wp12-strategy-memo.spec.ts`** (may skip if `strategy_memos` insert hits RLS), **`e2e/wp13-research-memo.spec.ts`** (skips if `research_memos` RLS not applied), and **`e2e/wp14-argument-draft.spec.ts`** (skips if `argument_drafts` RLS not applied). Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `CI=true pnpm test:e2e` — green (6 passed, 1 skipped: WP-14 until `argument_drafts` RLS on E2E DB, or WP-12 strategy path).
+- **Argument (WP-14):** Matter **Argument** tab: list + create + detail editor; `metadata.argument_sections` + narrative markdown; optional links to strategy/research memos; read-only **ArgumentInputSummaryPanel** (story, assertions, support, strategy list, research list, open research issues); **StrategyIssuePanels**; **ArgumentW9Placeholder** links to **Adversarial (W9)**. First draft advances **W7→W8** when applicable. Operator-only; no LLM.
+- **Adversarial (WP-15):** Matter **Adversarial** tab: list + create (requires active argument draft) + detail editor (`attack_matrix` sections, narrative markdown, severity, loop decision); read-only **ArgumentInputSummaryPanel** + **StrategyIssuePanels**; **AdversarialOutputPlaceholder** for WP-22 only. First critique advances **W8→W9** when applicable. No LLM; archive/supersede only (no hard delete).
+- **E2E (Playwright):** `pnpm test:e2e` runs `e2e/wp05-intake.spec.ts`, `e2e/wp06-evidence-upload.spec.ts`, **`e2e/wp10-story-assertions.spec.ts`**, **`e2e/wp11-support-matrix.spec.ts`**, **`e2e/wp12-strategy-memo.spec.ts`** (may skip if `strategy_memos` insert hits RLS), **`e2e/wp13-research-memo.spec.ts`** (skips if `research_memos` RLS not applied), **`e2e/wp14-argument-draft.spec.ts`** (skips if `argument_drafts` RLS not applied), and **`e2e/wp15-adversarial-critique.spec.ts`** (skips if `adversarial_critiques` RLS not applied). Requires `LEXOS_E2E_EMAIL` / `LEXOS_E2E_PASSWORD` (or `LEXOS_E2E_PASSWORD_FILE`) in `.env.local` or `.env.e2e.local`; optional `LEXOS_E2E_MATTER_ID`, `LEXOS_E2E_BASE_URL`, `LEXOS_E2E_SKIP_WEBSERVER`, **`LEXOS_E2E_BOOTSTRAP_AUTH=1`** (with `SUPABASE_SERVICE_ROLE_KEY`) to sync the Auth user password and seed a minimal client+matter when missing. **`CI=true`** (e.g. GitHub Actions) clears `LEXOS_E2E_SKIP_WEBSERVER` so Playwright starts `pnpm run dev` unless `LEXOS_E2E_ALLOW_SKIP_WEBSERVER_IN_CI=1`. `next.config.ts`: `allowedDevOrigins: ['127.0.0.1']` for dev when the browser uses 127.0.0.1. **Verification:** `pnpm lint`, `pnpm build`, `CI=true pnpm test:e2e` — green (7 passed, 1 skipped: WP-15 until `adversarial_critiques` RLS on E2E DB, or WP-12/WP-14 paths).
 
 ## Known risks
 
@@ -95,6 +98,6 @@ Last updated: 2026-05-13 (WP-14 W8 argument drafts; RLS on argument_drafts; work
 
 ## Next recommended step
 
-1. Operator review WP-14 on `dev/cursor-w8-argument`; merge to `development` when satisfied; set WP-14 to `done` in the work packet register.
-2. Apply migration `20260519100000_wp14_argument_drafts_rls.sql` to live/other Supabase projects (RLS for `argument_drafts`).
-3. Schedule **WP-21** W9 Adversarial Review when ready.
+1. Operator review WP-15 on `dev/cursor-w9-adversarial`; merge to `development` when satisfied; set WP-15 to `done` in the work packet register.
+2. Apply migration `20260520100000_wp15_adversarial_critiques_rls.sql` to live/other Supabase projects (RLS for `adversarial_critiques`).
+3. Schedule **WP-16** (risk/workflow/audit panels) or **WP-22** (revised output) when ready.

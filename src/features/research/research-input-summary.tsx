@@ -9,8 +9,8 @@ export function ResearchInputSummaryPanel({
 }: {
   matterId: string;
   summary: ResearchWorkspaceSummary;
-  /** W7 research pages: W6→W7 hint. Argument (W8) pages: W7→W8 hint. */
-  workflowAdvanceHint?: "research" | "argument";
+  /** W7 research pages: W6→W7 hint. Argument (W8) pages: W7→W8 hint. Adversarial (W9): W8→W9 hint. */
+  workflowAdvanceHint?: "research" | "argument" | "adversarial";
 }) {
   return (
     <div className="space-y-4">
