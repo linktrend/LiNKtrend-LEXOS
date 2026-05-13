@@ -50,3 +50,13 @@ export async function getAdversarialCritiqueForMatter(
   if (error || !data) return null;
   return data as AdversarialCritiqueRow;
 }
+
+const TERMINAL_ADVERSARIAL = new Set(["archived", "superseded"]);
+
+export async function countActiveAdversarialCritiquesForMatter(
+  supabase: SupabaseClient<Database>,
+  matterId: string
+): Promise<number> {
+  const rows = await listAdversarialCritiquesForMatter(supabase, matterId);
+  return rows.filter((c) => !TERMINAL_ADVERSARIAL.has(c.status ?? "")).length;
+}

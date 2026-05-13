@@ -6,6 +6,18 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
+**WP-22 — W11 Revised Output Foundation** — Implemented on **`dev/cursor-revised-output`** (register **`ready_for_review`**):
+
+- **Routes:** [`/matters/[matterId]/output`](src/app/matters/[matterId]/output/page.tsx), [`/matters/[matterId]/output/[outputArtifactId]`](src/app/matters/[matterId]/output/[outputArtifactId]/page.tsx); MatterNav **Output**; **`AdversarialOutputPlaceholder`** links to the output list.
+- **Server:** [`src/server/output/queries.ts`](src/server/output/queries.ts), [`mutations.ts`](src/server/output/mutations.ts), [`summary.ts`](src/server/output/summary.ts) — list/detail, `getOutputWorkspaceSummary`, `buildCaveatSnapshot`; create/update/archive on **`output_artifacts`**; W9 gate (≥1 active `adversarial_critiques` **or** `metadata.operator_override_w9_prereq` + reason ≥8 chars); [`advanceWorkflowToW11AfterFirstRevisedOutput`](src/server/workflow/mutations.ts) (strict **W9→W11** on first active output); audits `output_artifact_created` / `updated` / `archived` / `w9_caveat_carried_forward` (metadata only — no full markdown).
+- **UI:** [`src/features/output/*`](src/features/output/) — internal-work-product banners, create form (argument draft + adversarial critique, optional override), workspace editor (`metadata.revised_sections` + narrative markdown), read-only caveat panels.
+- **E2E:** [`e2e/wp22-revised-output.spec.ts`](e2e/wp22-revised-output.spec.ts) — argument → adversarial → output create path.
+- **RLS:** Existing **`20260520120000_wp16_output_artifacts_rls.sql`** (no new migration).
+
+Verification: **`pnpm run lint`** — clean. **`pnpm run build`** — clean. **`CI=true pnpm test:e2e`** — **9 passed**.
+
+---
+
 **Pre-WP-16 cleanup (2026-05-13)** — Readiness before WP-16 (no WP-16 product implementation):
 
 - **`docs/implementation/MIGRATION_HISTORY_NOTES.md`** — Repo vs live Supabase migration names; MCP-only WP-12 hotfix rows; WP-07 filename drift; warning not to duplicate DDL.
@@ -18,7 +30,7 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 - **Routes / nav:** [`/matters/[matterId]/adversarial`](src/app/matters/[matterId]/adversarial/page.tsx), [`/matters/[matterId]/adversarial/[adversarialCritiqueId]`](src/app/matters/[matterId]/adversarial/[adversarialCritiqueId]/page.tsx); MatterNav **Adversarial** unchanged; **ArgumentW9Placeholder** links to adversarial list.
 - **Server:** [`src/server/adversarial/queries.ts`](src/server/adversarial/queries.ts), [`mutations.ts`](src/server/adversarial/mutations.ts), [`summary.ts`](src/server/adversarial/summary.ts) (`getAdversarialWorkspaceSummary` = argument workspace summary + non-archived argument draft options); [`advanceWorkflowToW9AfterFirstAdversarialCritique`](src/server/workflow/mutations.ts) (strict **W8→W9** on first `adversarial_critiques` insert when matter at W8; `W9_NEXT_ACTION` constant); loop-decision optional `workflow_states.next_action` sync + audit `adversarial_loop_decision_recorded`.
-- **UI:** [`src/features/adversarial/*`](src/features/adversarial/) — banners, create form, critique workspace (attack matrix + markdown + severity + loop decision + archive/supersede), output placeholder (WP-22); list/detail pages mirror argument/research patterns; **StrategyIssuePanels** + **ArgumentInputSummaryPanel** with `workflowAdvanceHint="adversarial"`.
+- **UI:** [`src/features/adversarial/*`](src/features/adversarial/) — banners, create form, critique workspace (attack matrix + markdown + severity + loop decision + archive/supersede), **Output (W11)** link card (**WP-22**); list/detail pages mirror argument/research patterns; **StrategyIssuePanels** + **ArgumentInputSummaryPanel** with `workflowAdvanceHint="adversarial"`.
 - **RLS:** [`20260520100000_wp15_adversarial_critiques_rls.sql`](supabase/migrations/20260520100000_wp15_adversarial_critiques_rls.sql) — mirror WP-14 spirit; **no DELETE**; apply to live DB for non-skipped WP-15 E2E.
 - **Audits:** `adversarial_critique_created` / `updated` / `archived` / `adversarial_loop_decision_recorded` (metadata only — no full critique body).
 - **Register:** **WP-15** = W9 (full packet); former **WP-21** stub superseded; **WP-22** = W11 Revised Output (renumbered from old WP-15).
@@ -26,9 +38,9 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 Verification (WP-15 era): `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 7 passed, 1 skipped when `adversarial_critiques` RLS absent on E2E DB (pre-cleanup live may now be 8/8; see `PROJECT_STATE`).
 
-**Manual smoke (operator):** login → matter with W8 argument draft → **Adversarial** → create critique → editor saves matrix / loop decision / severity → issue panels still show gaps → output route still placeholder; optional: confirm workflow **W8→W9** after first critique when matter was in W8.
+**Manual smoke (operator):** login → matter with W8 argument draft → **Adversarial** → create critique → editor saves matrix / loop decision / severity → issue panels still show gaps → **Output** workspace creates revised artifact (W9 gate or override); optional: confirm workflow **W8→W9** after first critique when matter was in W8.
 
-Next: start **WP-16** on `dev/cursor-risk-workflow-audit` per register; **WP-22** revised output uses `dev/cursor-revised-output` when scheduled.
+Next: merge **`dev/cursor-revised-output`** after review; start **WP-16** on `dev/cursor-risk-workflow-audit` per register.
 
 ---
 
@@ -36,6 +48,7 @@ Next: start **WP-16** on `dev/cursor-risk-workflow-audit` per register; **WP-22*
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|-------------|---------|
+| 2026-05-13 | Cursor | WP-22 | W11 revised output list/detail, `src/server/output/*` + workflow W9→W11 on first output, W9 gate + override, caveat snapshot + audits, `src/features/output/*`, adversarial link to output, Playwright `wp22-revised-output`; lint+build+E2E 9 passed; register WP-22 `ready_for_review`; PROJECT_STATE updated. |
 | 2026-05-13 | Cursor | Pre-WP-16 cleanup | `MIGRATION_HISTORY_NOTES.md`; `output_artifacts` + `risks` RLS migrations (repo + MCP apply on `iqoelotzvdcjifajfuto`); PROJECT_STATE refresh (WP-16 vs WP-22 branch clarity); lint+build; no WP-16 UI. |
 | 2026-05-13 | Cursor | WP-15 | W9 adversarial list/detail, server CRUD + summary + workflow W8→W9 on first critique, RLS migration, argument W9 link + output placeholder, audits + Playwright wp15 (after argument draft); lint+build+E2E; PROJECT_STATE + register + handoff. |
 | 2026-05-13 | Cursor | WP-14 | W8 argument list/detail, server CRUD + summary + workflow W7→W8 on first draft, RLS migration, research W8 link + W9 placeholder, audits + Playwright wp14; strategy `argument` workflow hint; register WP-14/WP-21 reconciliation; lint+build+E2E; PROJECT_STATE + register + handoff. |

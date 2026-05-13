@@ -219,3 +219,41 @@ export async function advanceWorkflowToW9AfterFirstAdversarialCritique(
   await supabase.from("matters").update({ current_workflow: "W9" }).eq("id", matterId);
   await supabase.from("workflow_states").update(patch).eq("id", wf.id);
 }
+
+const W11_NEXT_ACTION =
+  "Review revised output and decide whether visual/presentation refinement is needed";
+
+/**
+ * After the first active revised output artifact is created: if workflow is still W9, advance to W11.
+ * Strict W9→W11 only. Does not imply final external approval or filing readiness.
+ */
+export async function advanceWorkflowToW11AfterFirstRevisedOutput(
+  supabase: SupabaseClient<Database>,
+  matterId: string
+): Promise<void> {
+  if (!isValidUuid(matterId)) return;
+
+  const { data: wf, error } = await supabase
+    .from("workflow_states")
+    .select("id, workflow_status, current_workflow")
+    .eq("matter_id", matterId)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !wf) return;
+
+  if (wf.current_workflow !== "W9") return;
+
+  const patch: Database["public"]["Tables"]["workflow_states"]["Update"] = {
+    current_workflow: "W11",
+    next_action: W11_NEXT_ACTION,
+  };
+
+  if (wf.workflow_status === "not_started") {
+    patch.workflow_status = "in_progress";
+  }
+
+  await supabase.from("matters").update({ current_workflow: "W11" }).eq("id", matterId);
+  await supabase.from("workflow_states").update(patch).eq("id", wf.id);
+}
