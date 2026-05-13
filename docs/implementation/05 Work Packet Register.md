@@ -1067,7 +1067,7 @@ Stop if W4 extraction foundation is missing.
 
 ## Status
 
-`not_started`
+`ready_for_review`
 
 ## Owner Tool
 
@@ -1097,7 +1097,16 @@ src/app/matters/[matterId]/assertions/
 src/features/story/
 src/features/assertions/
 src/server/story/
+src/server/workflow/
 src/server/assertions/
+src/server/audit/
+src/server/matters/
+src/components/
+supabase/migrations/
+e2e/
+tests/fixtures/
+PROJECT_STATE.md
+AGENT_HANDOFF.md
 ```
 
 ## Tasks
@@ -1119,7 +1128,8 @@ src/server/assertions/
 
 ## Tests Required
 
-Manual story/assertion extraction test.
+* Playwright E2E (`e2e/wp10-story-assertions.spec.ts` when credentials available);
+* manual story/assertion walkthrough.
 
 ## Stop Conditions
 

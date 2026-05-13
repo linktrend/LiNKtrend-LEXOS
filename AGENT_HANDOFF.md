@@ -6,18 +6,18 @@ Coordination between Cursor (lead IDE), Codex (isolated worker), and the human o
 
 ## Latest handoff summary
 
-**WP-09 — Evidence Workspace UI** — Implemented on `dev/cursor-ui-evidence`. Key deliverables:
+**WP-10 — W2 Case Story and Assertions** — Implemented on `dev/cursor-w2-story`. Key deliverables:
 
-- **`src/components/evidence/`** — `evidenceBadgeStyles.ts` (shared badge classes); **`EvidenceStatusBadges`** (detail status strip + `evidence-status-line`); **`EvidenceWarningBanners`** (stacked alerts: no original, no extraction, placeholder, failed, QA-flagged, parser-risk, accepted caveat, `human-review-banner`); **`EvidenceAssertionsPlaceholder`** (W5 static copy + disabled CTA).
-- **`src/server/evidence/queries.ts`** — **`listCurrentExtractionSummariesForMatter`** batched current-extraction fields for list badges (no N+1).
-- **`EvidenceTable`** — columns: processing, extraction, extraction quality, matter quality, review; `data-testid` `evidence-table`, `evidence-list-empty`, `evidence-row-{id}`; empty state links to `#evidence-upload`.
-- **`EvidenceDetailClient`** — merged **Quality & QA** tab (keeps `quality-flags-panel`, `qa-status-line`, `qa-flags-panel`, `run-extraction-qa`); original “evidentiary anchor” copy; metadata → run extraction → assertions placeholder.
-- **`EvidenceUploadForm`** — `id="evidence-upload"` on section for anchor.
-- **E2E:** [`e2e/wp06-evidence-upload.spec.ts`](e2e/wp06-evidence-upload.spec.ts) — tab button **Quality & QA** (was QA WP-08).
+- **Routes:** [`/matters/[matterId]/story`](src/app/matters/[matterId]/story/page.tsx), [`/matters/[matterId]/assertions`](src/app/matters/[matterId]/assertions/page.tsx), [`/matters/[matterId]/assertions/[assertionId]`](src/app/matters/[matterId]/assertions/[assertionId]/page.tsx).
+- **Server:** [`src/server/story/queries.ts`](src/server/story/queries.ts), [`mutations.ts`](src/server/story/mutations.ts), [`excerpt.ts`](src/server/story/excerpt.ts); [`src/server/assertions/queries.ts`](src/server/assertions/queries.ts), [`mutations.ts`](src/server/assertions/mutations.ts); [`src/server/workflow/mutations.ts`](src/server/workflow/mutations.ts) (`next_action` → “Review assertions and proceed to support mapping” after meaningful story length or assertion create).
+- **UI:** [`CaseStoryEditor`](src/features/story/CaseStoryEditor.tsx), [`CaseStoryWarnings`](src/features/story/CaseStoryWarnings.tsx); assertions table, create form, edit+archive, banners, [`SupportMatrixPlaceholder`](src/features/assertions/SupportMatrixPlaceholder.tsx). Manual assertions only; optional prefill from first story paragraph (deterministic). Archive = `use_status` superseded + `metadata.archived`; no hard delete; no `evidence_ids` writes.
+- **RLS:** [`20260515100000_wp10_case_stories_assertions_rls.sql`](supabase/migrations/20260515100000_wp10_case_stories_assertions_rls.sql) — matter `created_by` **or** client `created_by` **or** admin (fixes E2E matters where `matters.created_by` may not drive access alone). Live: Supabase MCP **`apply_migration`** `wp10_case_stories_assertions_rls`.
+- **Audits:** `case_story_created` / `case_story_updated`; `assertion_created` / `assertion_updated` / `assertion_archived` (metadata: ids + lengths only, no full body).
+- **E2E:** [`e2e/wp10-story-assertions.spec.ts`](e2e/wp10-story-assertions.spec.ts).
 
-Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 2 tests passed.
+Verification: `pnpm run lint` — clean. `pnpm run build` — clean. **`CI=true pnpm test:e2e`** — 3 tests passed.
 
-Next: operator merge WP-09; register WP-09 → `done` when merged; W5 when scheduled.
+Next: operator merge WP-10; register WP-10 → `done` when merged; WP-11 Support Matrix when scheduled.
 
 ---
 
@@ -25,7 +25,7 @@ Next: operator merge WP-09; register WP-09 → `done` when merged; W5 when sched
 
 | Date (UTC) | Agent / tool | Work packet | Summary |
 |------------|--------------|---------------|---------|
-| 2026-05-12 | Cursor | WP-09 | Evidence workspace UI: components, batched extraction summaries for list, table + empty state, detail merge Quality&QA + banners + W5 placeholder; E2E selector update; lint+build+E2E green; PROJECT_STATE + register `ready_for_review` + handoff. |
+| 2026-05-13 | Cursor | WP-10 | W2 story + assertions UI, server mutations, workflow next_action, audits, RLS migration (client creator fallback), MCP apply on live; E2e wp10 spec; lint+build+E2E green; PROJECT_STATE + register `ready_for_review` + handoff. |
 | 2026-05-14 | Cursor | WP-08 | Deterministic extraction QA comparator, run-qa server path, QA tab + server action, audit events, E2E upload→extract→QA; lint+build+E2E green; PROJECT_STATE + register `ready_for_review`. |
 | 2026-05-14 | Cursor | WP-07 | W4-lite extraction runner, parser adapters, evidence detail UI + server action, `evidence_extractions` RLS + follow-up join policies (MCP applied live), E2E extraction path + Playwright CI webServer fix; lint + build + E2E green; PROJECT_STATE + register → `ready_for_review`. |
 | 2026-05-12 | Cursor | E2E / WP-06 | Fixed Playwright login + WP-06: moved `EVIDENCE_UPLOAD_INITIAL` out of `actions.ts` (invalid `use server` export); `next.config.ts` `allowedDevOrigins: ['127.0.0.1']`; optional `e2e/global-setup.ts` (`LEXOS_E2E_BOOTSTRAP_AUTH=1`); WP-06 spec + `data-testid` upload errors; `pnpm test:e2e` + lint + build green. |
